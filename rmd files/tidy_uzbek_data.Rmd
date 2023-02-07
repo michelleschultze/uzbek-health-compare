@@ -1,0 +1,648 @@
+---
+title: "Uzbekistan Health Reforms: Tidying the Data (Uzbekistan)"
+author: Michelle Schultze
+output: pdf_document
+date: "2023-01-20"
+---
+
+```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
+install.packages("pls")
+library(readxl)
+library(tidyverse)
+library(broom)
+library(tidymodels)
+library(ggplot2)
+library(pls)
+
+doctors <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                             sheet = "doctors")
+length_of_stay <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                             sheet = "length-of-stay")
+pop_all <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                      sheet = "pop")
+pop_male <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                      sheet = "pop-male")
+pop_female <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                      sheet = "pop-female")
+age_structure <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                        sheet = "age-structure")
+fertility <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "fertility")
+hospitals <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "hospitals")
+beds <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "beds")
+nurses <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "nurses")
+birth_rate <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "birth-rate")
+IMR <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "IMR")
+diabetes <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "diabetes")
+cancer <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "cancer")
+endocrine <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "endocrine")
+blood <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "blood")
+circulatory <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "circulatory")
+respiratory <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "respiratory")
+congenital <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "congenital")
+digestive <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "digestive")
+genitourinary <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "genitourinary")
+injury <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "injury")
+preg_compl <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "preg-compl")
+skin <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "skin")
+TB <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "TB")
+
+
+## TBA: condensing this so that folks at home don't have to change the path 
+```
+
+
+**Tidy data**
+
+```{r doc-tidy}
+doctors <- doctors %>% 
+  gather(key = year, value = doctors_per_capita, -Region) 
+doctors[["year"]] <- as.numeric(doctors$year)
+doctors[["doctors_per_capita"]] <- as.numeric(doctors$doctors_per_capita)
+
+# Extract vector for country-level
+uz_doctors <- doctors %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+doctors <- doctors %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+```
+
+Further tidying not shown.
+
+```{r fert-tidy, message=FALSE, warning=FALSE, include=FALSE}
+fertility <- fertility %>% 
+  gather(key = year, value = fert_rate, -Region) 
+fertility[["year"]] <- as.numeric(fertility$year)
+fertility[["fert_rate"]] <- as.numeric(fertility$fert_rate)
+
+# Extract vector for country-level
+uz_fertility <- fertility %>% 
+  filter(Region == "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+fertility <- fertility %>%
+  filter(Region != "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+```
+
+```{r LOS-tidy, message=FALSE, warning=FALSE, include=FALSE}
+length_of_stay <- length_of_stay %>% 
+  gather(key = year, value = LOS, -Region) 
+length_of_stay[["year"]] <- as.numeric(length_of_stay$year)
+length_of_stay[["LOS"]] <- as.numeric(length_of_stay$LOS)
+
+length_of_stay <- length_of_stay %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+```
+
+```{r pop-tidy, message=FALSE, warning=FALSE, include=FALSE}
+pop_all <- pop_all %>% 
+  gather(key = year, value = pop, -Region) 
+pop_all[["year"]] <- as.numeric(pop_all$year)
+pop_all[["pop"]] <- as.numeric(pop_all$pop)
+
+pop_all <- pop_all %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+```
+
+```{r pop-gender-tidy, message=FALSE, warning=FALSE, include=FALSE}
+
+
+## for male population
+
+pop_male <- pop_male %>% 
+  gather(key = year, value = pop_m, -Region) 
+pop_male[["year"]] <- as.numeric(pop_male$year)
+pop_male[["pop_m"]] <- as.numeric(pop_male$pop_m)
+
+pop_male <- pop_male %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+## for female population
+
+pop_female <- pop_female %>% 
+  gather(key = year, value = pop_f, -Region) 
+pop_female[["year"]] <- as.numeric(pop_female$year)
+pop_female[["pop_f"]] <- as.numeric(pop_female$pop_f)
+
+# Remove country-level data for further analysis
+pop_female <- pop_female %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+```
+
+```{r other-tidy, message=FALSE, warning=FALSE, include=FALSE}
+age_structure <- age_structure %>% 
+  gather(key = age_range, value = pop_in_age, -Region) 
+age_structure[["pop_in_age"]] <- as.numeric(age_structure$pop_in_age)
+
+# Extract vector for country-level
+uz_age_structure <- age_structure %>%
+  filter(Region == "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+age_structure <- age_structure %>%
+  filter(Region != "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+
+hospitals <- hospitals %>% 
+  gather(key = year, value = hosp_count, -Region) 
+hospitals[["year"]] <- as.numeric(hospitals$year)
+hospitals[["hosp_count"]] <- as.numeric(hospitals$hosp_count)
+
+# Extract vector for country-level
+uz_hospitals <- hospitals %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+hospitals <- hospitals %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+beds <- beds %>% 
+  gather(key = year, value = beds_count, -Region) 
+beds[["year"]] <- as.numeric(beds$year)
+beds[["beds_count"]] <- as.numeric(beds$beds_count)
+
+# Extract vector for country-level
+uz_beds <- beds %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+beds <- beds %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+nurses <- nurses %>% 
+  gather(key = year, value = nurse_count, -Region) 
+nurses[["year"]] <- as.numeric(nurses$year)
+nurses[["nurse_count"]] <- as.numeric(nurses$nurse_count)
+
+# Extract vector for country-level
+uz_nurses <- nurses %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+nurses <- nurses %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+birth_rate <- birth_rate %>% 
+  gather(key = year, value = CBR, -Region) 
+birth_rate[["year"]] <- as.numeric(birth_rate$year)
+birth_rate[["CBR"]] <- as.numeric(birth_rate$CBR)
+
+# Extract vector for country-level
+uz_birth_rate <- birth_rate %>%
+  filter(Region == "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+birth_rate <- birth_rate %>%
+  filter(Region != "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+IMR <- IMR %>% 
+  gather(key = year, value = infant_mortality, -Region, -urbanrural)
+IMR[["year"]] <- as.numeric(IMR$year)
+IMR[["infant_mortality"]] <- as.numeric(IMR$infant_mortality)
+
+# Extract vector for country-level
+uz_IMR <- IMR %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+IMR <- IMR %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+diabetes <- diabetes %>% 
+  gather(key = year, value = diabetes_count, -Region) 
+diabetes[["year"]] <- as.numeric(diabetes$year)
+diabetes[["diabetes_count"]] <- as.numeric(diabetes$diabetes_count)
+
+# Extract vector for country-level
+uz_diabetes <- diabetes %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+diabetes <- diabetes %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+cancer <- cancer %>% 
+  gather(key = year, value = cancer_count, -Region) 
+cancer[["year"]] <- as.numeric(cancer$year)
+cancer[["cancer_count"]] <- as.numeric(cancer$cancer_count)
+
+# Extract vector for country-level
+uz_cancer <- cancer %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+cancer <- cancer %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+endocrine <- endocrine %>% 
+  gather(key = year, value = endocrine_count, -Region) 
+endocrine[["year"]] <- as.numeric(endocrine$year)
+endocrine[["endocrine_count"]] <- as.numeric(endocrine$endocrine_count)
+
+# Extract vector for country-level
+uz_endocrine <- endocrine %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+endocrine <- endocrine %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+
+
+respiratory <- respiratory %>% 
+  gather(key = year, value = respiratory_count, -Region) 
+respiratory[["year"]] <- as.numeric(respiratory$year)
+respiratory[["respiratory_count"]] <- as.numeric(respiratory$respiratory_count)
+
+# Extract vector for country-level
+uz_respiratory <- respiratory %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+respiratory <- respiratory %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+
+
+blood <- blood %>% 
+  gather(key = year, value = blood_disease_count, -Region) 
+blood[["year"]] <- as.numeric(blood$year)
+blood[["blood_disease_count"]] <- as.numeric(blood$blood_disease_count)
+
+# Extract vector for country-level
+uz_blood <- blood %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+blood <- blood %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+circulatory <- circulatory %>% 
+  gather(key = year, value = circulatory_count, -Region) 
+circulatory[["year"]] <- as.numeric(circulatory$year)
+circulatory[["circulatory_count"]] <- as.numeric(circulatory$circulatory_count)
+
+# Extract vector for country-level
+uz_circulatory <- circulatory %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+circulatory <- circulatory %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+congenital <- congenital %>% 
+  gather(key = year, value = congenital_count, -Region) 
+congenital[["year"]] <- as.numeric(congenital$year)
+congenital[["congenital_count"]] <- as.numeric(congenital$congenital_count)
+
+# Extract vector for country-level
+uz_congenital <- congenital %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+congenital <- congenital %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+digestive <- digestive %>% 
+  gather(key = year, value = digestive_count, -Region) 
+digestive[["year"]] <- as.numeric(digestive$year)
+digestive[["digestive_count"]] <- as.numeric(digestive$digestive_count)
+
+# Extract vector for country-level
+uz_digestive <- digestive %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+digestive <- digestive %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+
+genitourinary <- genitourinary %>% 
+  gather(key = year, value = genitourinary_count, -Region) 
+genitourinary[["year"]] <- as.numeric(genitourinary$year)
+genitourinary[["genitourinary_count"]] <- as.numeric(genitourinary$genitourinary_count)
+
+# Extract vector for country-level
+uz_genitourinary <- genitourinary %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+genitourinary <- genitourinary %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+injury <- injury %>% 
+  gather(key = year, value = injury_count, -Region) 
+injury[["year"]] <- as.numeric(injury$year)
+injury[["injury_count"]] <- as.numeric(injury$injury_count)
+
+# Extract vector for country-level
+uz_injury <- injury %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+injury <- injury %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+preg_compl <- preg_compl %>% 
+  gather(key = year, value = preg_compl_count, -Region) 
+preg_compl[["year"]] <- as.numeric(preg_compl$year)
+preg_compl[["preg_compl_count"]] <- as.numeric(preg_compl$preg_compl_count)
+
+# Extract vector for country-level
+uz_preg_compl <- preg_compl %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+preg_compl <- preg_compl %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+skin <- skin %>% 
+  gather(key = year, value = skin_count, -Region) 
+skin[["year"]] <- as.numeric(skin$year)
+skin[["skin_count"]] <- as.numeric(skin$skin_count)
+
+# Extract vector for country-level
+uz_skin <- skin %>%
+  filter(Region == "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+skin <- skin %>%
+  filter(Region != "Republic of Uzbekistan, total population*") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+TB <- TB %>% 
+  gather(key = year, value = tuberculosis, -Region) 
+TB[["year"]] <- as.numeric(TB$year)
+TB[["tuberculosis"]] <- as.numeric(TB$tuberculosis)
+
+# Extract vector for country-level
+uz_TB <- TB %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+TB <- TB %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+```
+
+```{r merge-diseases, message=FALSE, warning=FALSE, include=FALSE}
+diseases <- diabetes %>%
+  merge(blood, by = c("Region", "year"), all = TRUE) %>%
+  merge(cancer, by = c("Region", "year"), all = TRUE) %>%
+  merge(circulatory, by = c("Region", "year"), all = TRUE) %>%
+  merge(congenital, by = c("Region", "year"), all = TRUE) %>%
+  merge(digestive, by = c("Region", "year"), all = TRUE) %>%
+  merge(endocrine, by = c("Region", "year"), all = TRUE) %>%
+  merge(genitourinary, by = c("Region", "year"), all = TRUE) %>%
+  merge(injury, by = c("Region", "year"), all = TRUE) %>%
+  merge(preg_compl, by = c("Region", "year"), all = TRUE) %>%
+  merge(respiratory, by = c("Region", "year"), all = TRUE) %>%
+  merge(skin, by = c("Region", "year"), all = TRUE) 
+```
+
+
+
+```{r merge-full, message=FALSE, warning=FALSE, include=FALSE}
+uzbek_data <- diseases %>%
+  merge(beds, by = c("Region", "year"), all = TRUE) %>%
+  merge(hospitals, by = c("Region", "year"), all = TRUE) %>%
+  merge(doctors, by = c("Region", "year"), all = TRUE) %>%
+  merge(nurses, by = c("Region", "year"), all = TRUE) %>%
+  merge(birth_rate, by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(IMR, urbanrural == "all"), infant_mortality_all = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(IMR, urbanrural == "urban"), infant_mortality_urban = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(IMR, urbanrural == "rural"), infant_mortality_rural = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(fertility, by = c("Region", "year"), all = TRUE) %>%
+  merge(length_of_stay, by = c("Region", "year"), all = TRUE) %>%
+  merge(pop_all, by = c("Region", "year"), all = TRUE) %>%
+  merge(pop_male, by = c("Region", "year"), all = TRUE) %>%
+  merge(pop_female, by = c("Region", "year"), all = TRUE) %>%
+  merge(TB, by = c("Region", "year"), all = TRUE)
+
+# Per capitas
+uzbek_data <- uzbek_data %>%
+  mutate(pc_beds = 1000 * beds_count / pop) %>%
+  mutate(pc_cancer = 1000 * cancer_count / pop) %>%
+  mutate(pc_circulatory = 1000 * circulatory_count / pop) %>%
+  mutate(pc_diabetes = 1000 * diabetes_count / pop) %>%
+  mutate(pc_digestive = 1000 * digestive_count / pop) %>%
+  mutate(pc_TB = 1000 * tuberculosis / pop) %>%
+  mutate(pc_injury = 1000 * injury_count / pop) %>%
+  mutate(pc_hosp = 1000 * hosp_count / pop) %>%
+  mutate(male_percent = pop_m / pop)
+
+
+
+
+
+
+# national level
+
+nat_diseases <- uz_diabetes %>%
+  merge(uz_blood, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_cancer, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_circulatory, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_congenital, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_digestive, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_endocrine, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_genitourinary, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_injury, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_preg_compl, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_respiratory, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_skin, by = c("Region", "year"), all = TRUE) 
+
+#national population dataframe
+
+nat_pop_all <- pop_all %>%
+  group_by(year) %>%
+  mutate(n = sum(pop)) %>%
+  filter(Region == "Syrdarya") %>% #random region, they all contain the nat value
+  mutate(Region = case_when(Region == "Syrdarya" ~ "Uzbekistan (National Level)")) %>%
+  mutate(pop = n) %>% 
+  select(-n)
+
+nat_pop_male <- pop_male %>%
+  group_by(year) %>%
+  mutate(n = sum(pop_m)) %>%
+  filter(Region == "Syrdarya") %>% #random region, they all contain the nat value
+  mutate(Region = case_when(Region == "Syrdarya" ~ "Uzbekistan (National Level)")) %>%
+  mutate(pop_m = n) %>% 
+  select(-n)
+
+nat_pop_female <- pop_female %>%
+  group_by(year) %>%
+  mutate(n = sum(pop_f)) %>%
+  filter(Region == "Syrdarya") %>% #random region, they all contain the nat value
+  mutate(Region = case_when(Region == "Syrdarya" ~ "Uzbekistan (National Level)")) %>%
+  mutate(pop_f = n) %>% 
+  select(-n)
+
+# continue making full dataframe
+
+nat_uzbek_data <- nat_diseases %>%
+  merge(uz_beds, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_hospitals, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_doctors, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_nurses, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_birth_rate, by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(uz_IMR, urbanrural == "all"), infant_mortality_all = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(uz_IMR, urbanrural == "urban"), infant_mortality_urban = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(uz_IMR, urbanrural == "rural"), infant_mortality_rural = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_fertility, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_TB, by = c("Region", "year"), all = TRUE) %>%
+  merge(nat_pop_all, by = c("Region", "year"), all = TRUE) %>%
+  merge(nat_pop_male, by = c("Region", "year"), all = TRUE) %>%
+  merge(nat_pop_female, by = c("Region", "year"), all = TRUE) 
+
+# Per capitas
+nat_uzbek_data <- nat_uzbek_data %>%
+  mutate(pc_beds = 1000 * beds_count / pop) %>%
+  mutate(pc_cancer = 1000 * cancer_count / pop) %>%
+  mutate(pc_circulatory = 1000 * circulatory_count / pop) %>%
+  mutate(pc_diabetes = 1000 * diabetes_count / pop) %>%
+  mutate(pc_digestive = 1000 * digestive_count / pop) %>%
+  mutate(pc_TB = 1000 * tuberculosis / pop) %>%
+  mutate(pc_injury = 1000 * injury_count / pop) %>%
+  mutate(pc_hosp = 1000 * hosp_count / pop) %>%
+  mutate(male_percent = pop_m / pop)
+
+
+
+
+## TBA: drop intermediate columns (such as for infant mortality) but we can leave them for right now because they don't matter
+```
+
+
+Export tidied data to csv:
+
+```{r export}
+write.csv(uzbek_data, "/Users/michelle/uzbek-healthcare/data//uzbekistan_data_tidy.csv", row.names=FALSE)
+
+write.csv(nat_uzbek_data, "/Users/michelle/uzbek-healthcare/data//national_uzbekistan_data_tidy.csv", row.names=FALSE)
+
+```
+
