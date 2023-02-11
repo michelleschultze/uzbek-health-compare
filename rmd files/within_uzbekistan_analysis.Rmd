@@ -25,12 +25,27 @@ theme_bw()
 **Charts**
 
 ```{r doc-plots}
-ggplot(uz_data, aes(x = year, y = doctors_per_capita, color = Region)) +
+yrs <- uz_data %>%
+  filter(doctors_per_capita != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- yrs$year[2]
+  
+  
+
+## year range: 2002-2020 automatically stored for future use
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
   geom_line() +
   labs(title = "Doctors Per Capita", 
        x = "Year", y = "Doctors Per Capita")
 
-ggplot(uz_data, aes(x = year, y = doctors_per_capita, color = Region)) +
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
   geom_line() +
   facet_wrap(~ Region) + 
   labs(title = "Doctors Per Capita", 
@@ -39,14 +54,16 @@ ggplot(uz_data, aes(x = year, y = doctors_per_capita, color = Region)) +
 
 # Exclude the outlier, Tashkent City
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region != "Tashkent city") %>%
-ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
+  ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
   geom_line() +
   labs(title = "Doctors Per Capita", 
        x = "Year", y = "Doctors Per Capita",
        subtitle = "Omitting Tashkent City")
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region != "Tashkent city") %>%
   ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
   geom_line() +
@@ -56,7 +73,7 @@ uz_data %>%
        subtitle = "Omitting Tashkent City") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
-## TBA: Add national level analysis? (goes for all)
+
 ```
 
 ```{r doc-boxplots}
@@ -64,7 +81,7 @@ uz_data %>%
 
 uz_data %>%
   ggplot(aes(x = Region, y = doctors_per_capita)) +
-  geom_boxplot() +
+  geom_boxplot(aes(fill = Region), show.legend = FALSE) +
   labs(title = "Doctors Per Capita", 
      x = "Region", y = "Doctors Per Capita") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
@@ -72,7 +89,7 @@ uz_data %>%
 uz_data %>%
   filter(Region != "Tashkent city") %>%
   ggplot(aes(x = Region, y = doctors_per_capita)) +
-  geom_boxplot(aes(fill = Region)) +
+  geom_boxplot(aes(fill = Region), show.legend = FALSE) +
   labs(title = "Doctors Per Capita", subtitle = "Omitting Tashkent City",
      x = "Region", y = "Doctors Per Capita") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
@@ -80,6 +97,7 @@ uz_data %>%
 # By year
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = as.character(year), y = doctors_per_capita)) +
   geom_boxplot() +
   labs(title = "Doctors Per Capita", subtitle = "by year",
@@ -87,6 +105,7 @@ uz_data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region != "Tashkent city") %>%
   ggplot(aes(x = as.character(year), y = doctors_per_capita)) +
   geom_boxplot() +
@@ -97,6 +116,7 @@ uz_data %>%
 
 ```{r docs-histo}
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = doctors_per_capita)) +
   geom_histogram(bins = 10) +
   facet_wrap(~ year) +
@@ -107,6 +127,7 @@ uz_data %>%
 # Exclude the outlier, Tashkent City
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region != "Tashkent city") %>%
   ggplot(aes(x = doctors_per_capita)) +
   geom_histogram(bins = 10) +
@@ -121,13 +142,16 @@ uz_data %>%
 
 ```{r docs-uz}
 nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = year, y = doctors_per_capita)) +
-  geom_point() +
-  geom_line() +
-  labs(title = "Doctors per Capita", subtitle = "Uzbekistan national level", x = "Year", y = "Doctors per Capita")
+  geom_line() + geom_point() +
+  labs(title = "Doctors per Capita", subtitle = "Uzbekistan national level", 
+       x = "Year", y = "Doctors Per Capita")
 
-ggplot(nat_uz_data, aes(x = year, y = doctors_per_capita)) +
-  geom_line(size=1.25) +
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = doctors_per_capita)) +
+  geom_line(linewidth=1.25) +
   geom_line(data = filter(uz_data, Region == "Tashkent city" | Region == "Navoiy" | Region == "Jizah" | Region == "Syrdarya" | Region == "Tashkent"), aes(x = year, y = doctors_per_capita, color = Region)) +
   labs(title = "Doctors per Capita", subtitle = "Uzbekistan national level", x = "Year", y = "Doctors per Capita")
 ```
@@ -175,7 +199,7 @@ uz_data %>%
   select(Region, year, doctors_per_capita)
 ```
 
-Simple regressions (probably bad, I just don't really know what to do with time series)
+Simple regressions 
 
 ```{r doc-regressions}
 nat_uz_data %>%
@@ -198,11 +222,24 @@ doctorsmodel <- linear_reg() %>%
   fit(doctors_per_capita ~ year, data = filter(uz_data, Region == "Tashkent city"))
 tidy(doctorsmodel)
 glance(doctorsmodel)$p.value < 0.01
+
+#remove likely error
+
+uz_data %>%
+  filter(Region == "Tashkent city", doctors_per_capita >= 60) %>%
+  ggplot(aes(x=year,y=doctors_per_capita)) +
+  geom_smooth(method = "lm") + 
+  geom_line()
+doctorsmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(doctors_per_capita ~ year, data = filter(uz_data, Region == "Tashkent city"))
+tidy(doctorsmodel)
+glance(doctorsmodel)$p.value < 0.01
 ```
 
+We have evidence to support that doctors per capita have decreased by approximately 0.24 doctors per 10000 population each year in Uzbekistan. Even once removing the likely error in our data, we do not have evidence to support a linear relationship between doctors per capita and year during this time period in Tashkent City.
 
 
-We have evidence to support that doctors per capita have decreased by approximately 0.24 doctors per 10000 population each year in Uzbekistan. However, we do not have evidence to support a linear relationship between doctors per capita and year during this time period in Tashkent City.
 
 
 **Fertility Rates**
@@ -210,26 +247,43 @@ We have evidence to support that doctors per capita have decreased by approximat
 **Charts**
 
 ```{r fert-plots}
-ggplot(uz_data, aes(x = year, y = fert_rate, color = Region)) +
+yrs <- uz_data %>%
+  filter(fert_rate != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- yrs$year[2]
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+ggplot(aes(x = year, y = fert_rate, color = Region)) +
   geom_line() +
   labs(title = "Fertility Rate", 
        x = "Year", y = "Fertility Rate")
 
-ggplot(uz_data, aes(x = year, y = fert_rate, color = Region)) +
+## Note the trend for Tashkent city (I can highlight this if necessary)
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+ggplot(aes(x = year, y = fert_rate, color = Region)) +
   geom_line() +
   facet_wrap(~ Region) + 
   labs(title = "Fertility Rate", 
      x = "Year", y = "Fertility Rate") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
-# Exclude the outlier, Tashkent City
 uz_data %>%
-  filter(Region != "Tashkent city") %>%
+  filter(year >= yr_start, year <= yr_end) %>%
 ggplot(aes(x = year, y = fert_rate, color = Region)) +
-  geom_line() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ Region) + 
   labs(title = "Fertility Rate", 
-       x = "Year", y = "Fertility Rate",
-       subtitle = "Omitting Tashkent City")
+     x = "Year", y = "Fertility Rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+## very small standard error for each
+## which regions tend to have downward trends? Karakalpakstan, Khorezm (West/SW regions) + Bukhara with no change (SW region)
+
 ```
 
 ```{r fert-boxplots}
@@ -245,6 +299,7 @@ uz_data %>%
 # By year
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = as.character(year), y = fert_rate)) +
   geom_boxplot() +
   labs(title = "Fertility Rate", subtitle = "by year",
@@ -252,10 +307,9 @@ uz_data %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ## Note the greater spread in fertility rate as the years go on
-```
 
-```{r fert-histo}
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = fert_rate)) +
   geom_histogram(bins = 10) +
   facet_wrap(~ year) +
@@ -263,31 +317,26 @@ uz_data %>%
        y = "Number of Regions") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
-# Exclude the outlier, Tashkent City
-
-uz_data %>%
-  filter(Region != "Tashkent city") %>%
-  ggplot(aes(x = fert_rate)) +
-  geom_histogram(bins = 10) +
-  facet_wrap(~ year) +
-  labs(title = "Fertility Rate", x = "Fertility Rate", 
-       y = "Number of Regions", subtitle = "Omitting Tashkent City") + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+## more of showing the increased spread
 ```
+
 
 
 **Looking at the national level**
 
 ```{r fert-uz}
 nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = year, y = fert_rate)) +
   geom_point() +
   geom_line() +
   labs(title = "Fertility Rate", subtitle = "Uzbekistan national level", x = "Year", y = "Fertility Rate")
 
-ggplot(nat_uz_data, aes(x = year, y = fert_rate)) +
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+ggplot(aes(x = year, y = fert_rate)) +
   geom_line(size=1.25) +
-  geom_line(data = filter(uz_data, Region == "Tashkent city" | Region == "Navoi" | Region == "Jizzakh" | Region == "Syrdarya" | Region == "Tashkent"), aes(x = year, y = fert_rate, color = Region)) +
+  geom_line(data = filter(uz_data, Region == "Tashkent city" | Region == "Navoi" | Region == "Jizzakh" | Region == "Syrdarya" | Region == "Tashkent", year >= yr_start, year <= yr_end), aes(x = year, y = fert_rate, color = Region)) +
   labs(title = "Fertility Rate", subtitle = "Uzbekistan national level", x = "Year", y = "Fertility Rate")
 ```
 
@@ -328,13 +377,15 @@ uz_data %>%
 
 
 
-**Simple regressions (probably bad, I just don't really know what to do with time series)**
+**Simple regressions**
 
 ```{r fert-regressions}
 nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x=year,y=fert_rate)) +
   geom_smooth(method = "lm") + 
-  geom_line()
+  geom_line() +
+  labs(title = "Fertility rate over time, national level")
 uz_fert_model <- linear_reg() %>%
   set_engine("lm") %>%
   fit(fert_rate ~ year, data = nat_uz_data)
@@ -342,19 +393,49 @@ tidy(uz_fert_model)
 glance(uz_fert_model)$p.value < 0.01
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region == "Tashkent city") %>%
   ggplot(aes(x=year,y=fert_rate)) +
   geom_smooth(method = "lm") + 
-  geom_line()
+  geom_line() +
+  labs(title = "Fertility rate over time in Tashkent city")
 fert_model <- linear_reg() %>%
   set_engine("lm") %>%
   fit(fert_rate ~ year, data = filter(uz_data, Region == "Tashkent city"))
 tidy(fert_model)
-glance(fert_model)$p.value
+glance(fert_model)$p.value ##almost significant
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  filter(Region == "Tashkent") %>%
+  ggplot(aes(x=year,y=fert_rate)) +
+  geom_smooth(method = "lm") + 
+  geom_line() +
+  labs(title = "Fertility rate over time in Tashkent oblast")
+fert_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(fert_rate ~ year, data = filter(uz_data, Region == "Tashkent"))
+tidy(fert_model)
+glance(fert_model)$p.value < 0.01
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  filter(Region == "Syrdarya") %>%
+  ggplot(aes(x=year,y=fert_rate)) +
+  geom_smooth(method = "lm") + 
+  geom_line() +
+  labs(title = "Fertility rate over time in Syrdarya oblast")
+fert_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(fert_rate ~ year, data = filter(uz_data, Region == "Syrdarya"))
+tidy(fert_model)
+glance(fert_model)$p.value < 0.01
 ```
 
 We have evidence to support that the fertility rate in Uzbekistan has increased by approximately 0.25 units each year 2009-2021.
 We also have moderately strong evidence to support a linear relationship between fertility rate and year during this time period in Tashkent City.
+However, we don't have evidence to support such a relationship in Tashkent ot Syrdarya oblasts.
 
 
 
