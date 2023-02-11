@@ -1,0 +1,529 @@
+---
+title: "Uzbekistan Health Reforms: Within Uzbekistan Analysis"
+author: Michelle Schultze
+output: pdf_document
+date: "2023-01-22"
+---
+
+```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
+library(readxl)
+library(tidyverse)
+library(broom)
+library(tidymodels)
+library(ggplot2)
+library(pls)
+
+uz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/uzbekistan_data_tidy.csv")
+nat_uz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/national_uzbekistan_data_tidy.csv")
+
+theme_bw()
+```
+
+
+**Doctors Per Capita**
+
+**Charts**
+
+```{r doc-plots}
+ggplot(uz_data, aes(x = year, y = doctors_per_capita, color = Region)) +
+  geom_line() +
+  labs(title = "Doctors Per Capita", 
+       x = "Year", y = "Doctors Per Capita")
+
+ggplot(uz_data, aes(x = year, y = doctors_per_capita, color = Region)) +
+  geom_line() +
+  facet_wrap(~ Region) + 
+  labs(title = "Doctors Per Capita", 
+     x = "Year", y = "Doctors Per Capita") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# Exclude the outlier, Tashkent City
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
+  geom_line() +
+  labs(title = "Doctors Per Capita", 
+       x = "Year", y = "Doctors Per Capita",
+       subtitle = "Omitting Tashkent City")
+
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+  ggplot(aes(x = year, y = doctors_per_capita, color = Region)) +
+  geom_line() +
+  facet_wrap(~ Region) + 
+  labs(title = "Doctors Per Capita", 
+       x = "Year", y = "Doctors Per Capita",
+       subtitle = "Omitting Tashkent City") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+## TBA: Add national level analysis? (goes for all)
+```
+
+```{r doc-boxplots}
+# By Region
+
+uz_data %>%
+  ggplot(aes(x = Region, y = doctors_per_capita)) +
+  geom_boxplot() +
+  labs(title = "Doctors Per Capita", 
+     x = "Region", y = "Doctors Per Capita") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+  ggplot(aes(x = Region, y = doctors_per_capita)) +
+  geom_boxplot(aes(fill = Region)) +
+  labs(title = "Doctors Per Capita", subtitle = "Omitting Tashkent City",
+     x = "Region", y = "Doctors Per Capita") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# By year
+
+uz_data %>%
+  ggplot(aes(x = as.character(year), y = doctors_per_capita)) +
+  geom_boxplot() +
+  labs(title = "Doctors Per Capita", subtitle = "by year",
+     x = "Year", y = "Doctors Per Capita") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+  ggplot(aes(x = as.character(year), y = doctors_per_capita)) +
+  geom_boxplot() +
+  labs(title = "Doctors Per Capita", subtitle = "by year, omitting Tashkent City",
+     x = "Year", y = "Doctors Per Capita") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+```{r docs-histo}
+uz_data %>%
+  ggplot(aes(x = doctors_per_capita)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~ year) +
+  labs(title = "Doctors Per Capita", x = "Doctors per Capita", 
+       y = "Number of Regions") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# Exclude the outlier, Tashkent City
+
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+  ggplot(aes(x = doctors_per_capita)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~ year) +
+  labs(title = "Doctors Per Capita", x = "Doctors per Capita", 
+       y = "Number of Regions", subtitle = "Omitting Tashkent City") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+
+**Looking at the national level**
+
+```{r docs-uz}
+nat_uz_data %>%
+  ggplot(aes(x = year, y = doctors_per_capita)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Doctors per Capita", subtitle = "Uzbekistan national level", x = "Year", y = "Doctors per Capita")
+
+ggplot(nat_uz_data, aes(x = year, y = doctors_per_capita)) +
+  geom_line(size=1.25) +
+  geom_line(data = filter(uz_data, Region == "Tashkent city" | Region == "Navoiy" | Region == "Jizah" | Region == "Syrdarya" | Region == "Tashkent"), aes(x = year, y = doctors_per_capita, color = Region)) +
+  labs(title = "Doctors per Capita", subtitle = "Uzbekistan national level", x = "Year", y = "Doctors per Capita")
+```
+
+
+**Descriptives**
+
+Jizah and Surkhandarya were the only regions to have less than or equal to 1.7 doctors per 1000 people (global average) in 2019.
+source: https://data.worldbank.org/indicator/SH.MED.PHYS.ZS?end=2019&start=1963 
+
+```{r glob-docs}
+uz_data %>%
+  filter(doctors_per_capita <= 17,
+         year == 2019) %>%
+  select(Region, year, doctors_per_capita)
+```
+
+Doctors per capita in Uzbekistan in 2002 was 31.9 doctors per 10000 people. Two regions exhibited more than the national average for doctors per capita in 2002.
+
+```{r uz-doc-2002}
+uz_doc_2002 <- nat_uz_data %>%
+  filter(year == 2002) %>%
+  select(doctors_per_capita)
+uz_doc_2002 <- uz_doc_2002$doctors_per_capita
+uz_doc_2002
+
+uz_data %>%
+  filter(doctors_per_capita > uz_doc_2002,
+         year == 2002) %>%
+  select(Region, year, doctors_per_capita)
+```
+
+Doctors per capita in Uzbekistan in 2020 was 27 doctors per 10000 people. Four regions had over than the national average for doctors per capita in 2020.
+
+```{r uz-doc-2020}
+uz_doc_2020 <- nat_uz_data %>%
+  filter(year == 2020) %>%
+  select(doctors_per_capita)
+uz_doc_2020 <- uz_doc_2020$doctors_per_capita
+uz_doc_2020
+
+uz_data %>%
+  filter(doctors_per_capita > uz_doc_2020,
+         year == 2020) %>%
+  select(Region, year, doctors_per_capita)
+```
+
+Simple regressions (probably bad, I just don't really know what to do with time series)
+
+```{r doc-regressions}
+nat_uz_data %>%
+  ggplot(aes(x=year,y=doctors_per_capita)) +
+  geom_smooth(method = "lm") + 
+  geom_line()
+uz_doctorsmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(doctors_per_capita ~ year, data = nat_uz_data)
+tidy(uz_doctorsmodel)
+glance(uz_doctorsmodel)$p.value < 0.01
+
+uz_data %>%
+  filter(Region == "Tashkent city") %>%
+  ggplot(aes(x=year,y=doctors_per_capita)) +
+  geom_smooth(method = "lm") + 
+  geom_line()
+doctorsmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(doctors_per_capita ~ year, data = filter(uz_data, Region == "Tashkent city"))
+tidy(doctorsmodel)
+glance(doctorsmodel)$p.value < 0.01
+```
+
+
+
+We have evidence to support that doctors per capita have decreased by approximately 0.24 doctors per 10000 population each year in Uzbekistan. However, we do not have evidence to support a linear relationship between doctors per capita and year during this time period in Tashkent City.
+
+
+**Fertility Rates**
+
+**Charts**
+
+```{r fert-plots}
+ggplot(uz_data, aes(x = year, y = fert_rate, color = Region)) +
+  geom_line() +
+  labs(title = "Fertility Rate", 
+       x = "Year", y = "Fertility Rate")
+
+ggplot(uz_data, aes(x = year, y = fert_rate, color = Region)) +
+  geom_line() +
+  facet_wrap(~ Region) + 
+  labs(title = "Fertility Rate", 
+     x = "Year", y = "Fertility Rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# Exclude the outlier, Tashkent City
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+ggplot(aes(x = year, y = fert_rate, color = Region)) +
+  geom_line() +
+  labs(title = "Fertility Rate", 
+       x = "Year", y = "Fertility Rate",
+       subtitle = "Omitting Tashkent City")
+```
+
+```{r fert-boxplots}
+# By Region
+
+uz_data %>%
+  ggplot(aes(x = Region, y = fert_rate)) +
+  geom_boxplot() +
+  labs(title = "Fertility Rate", 
+     x = "Region", y = "Fertility Rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# By year
+
+uz_data %>%
+  ggplot(aes(x = as.character(year), y = fert_rate)) +
+  geom_boxplot() +
+  labs(title = "Fertility Rate", subtitle = "by year",
+     x = "Year", y = "Fertility Rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+## Note the greater spread in fertility rate as the years go on
+```
+
+```{r fert-histo}
+uz_data %>%
+  ggplot(aes(x = fert_rate)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~ year) +
+  labs(title = "Fertility Rate", x = "Fertility Rate", 
+       y = "Number of Regions") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# Exclude the outlier, Tashkent City
+
+uz_data %>%
+  filter(Region != "Tashkent city") %>%
+  ggplot(aes(x = fert_rate)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~ year) +
+  labs(title = "Fertility Rate", x = "Fertility Rate", 
+       y = "Number of Regions", subtitle = "Omitting Tashkent City") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+
+**Looking at the national level**
+
+```{r fert-uz}
+nat_uz_data %>%
+  ggplot(aes(x = year, y = fert_rate)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Fertility Rate", subtitle = "Uzbekistan national level", x = "Year", y = "Fertility Rate")
+
+ggplot(nat_uz_data, aes(x = year, y = fert_rate)) +
+  geom_line(size=1.25) +
+  geom_line(data = filter(uz_data, Region == "Tashkent city" | Region == "Navoi" | Region == "Jizzakh" | Region == "Syrdarya" | Region == "Tashkent"), aes(x = year, y = fert_rate, color = Region)) +
+  labs(title = "Fertility Rate", subtitle = "Uzbekistan national level", x = "Year", y = "Fertility Rate")
+```
+
+
+
+
+**Descriptives**
+
+The fertility rate in Uzbekistan in 2009 was 23.4. Eight regions exhibited more than the national average for the fertility rate in 2009.
+
+```{r uz-fert-2009}
+uz_fert_2009 <- nat_uz_data %>%
+  filter(year == 2009) %>%
+  select(fert_rate)
+uz_fert_2009 <- uz_fert_2009$fert_rate
+uz_fert_2009
+
+uz_data %>%
+  filter(fert_rate > uz_fert_2009,
+         year == 2009) %>%
+  select(Region, year, fert_rate)
+```
+
+The fertility rate in Uzbekistan in 2021 was 25.9. Eight regions had over than the national average for the fertility rate in 2021, with Khorezm/Karakalpakstan trading places with Navoi/Namagan.
+
+```{r uz-fert-2021}
+uz_fert_2021 <- nat_uz_data %>%
+  filter(year == 2021) %>%
+  select(fert_rate)
+uz_fert_2021 <- uz_fert_2021$fert_rate
+uz_fert_2021
+
+uz_data %>%
+  filter(fert_rate > uz_fert_2021,
+         year == 2021) %>%
+  select(Region, year, fert_rate)
+```
+
+
+
+**Simple regressions (probably bad, I just don't really know what to do with time series)**
+
+```{r fert-regressions}
+nat_uz_data %>%
+  ggplot(aes(x=year,y=fert_rate)) +
+  geom_smooth(method = "lm") + 
+  geom_line()
+uz_fert_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(fert_rate ~ year, data = nat_uz_data)
+tidy(uz_fert_model)
+glance(uz_fert_model)$p.value < 0.01
+
+uz_data %>%
+  filter(Region == "Tashkent city") %>%
+  ggplot(aes(x=year,y=fert_rate)) +
+  geom_smooth(method = "lm") + 
+  geom_line()
+fert_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(fert_rate ~ year, data = filter(uz_data, Region == "Tashkent city"))
+tidy(fert_model)
+glance(fert_model)$p.value
+```
+
+We have evidence to support that the fertility rate in Uzbekistan has increased by approximately 0.25 units each year 2009-2021.
+We also have moderately strong evidence to support a linear relationship between fertility rate and year during this time period in Tashkent City.
+
+
+
+
+
+**Average Length of Stay**
+
+**Charts**
+
+```{r LOS-plots}
+ggplot(uz_data, aes(x = year, y = LOS, color = Region)) +
+  geom_line() +
+  labs(title = "Average Length of Stay", 
+       x = "Year", y = "Average Length of Stay (days)")
+
+ggplot(uz_data, aes(x = year, y = LOS, color = Region)) +
+  geom_line() +
+  facet_wrap(~ Region) + 
+  labs(title = "Average Length of Stay", 
+     x = "Year", y = "Average Length of Stay (days)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+```{r LOS-boxplots}
+# By Region
+
+uz_data %>%
+  ggplot(aes(x = Region, y = LOS)) +
+  geom_boxplot() +
+  labs(title = "Average Length of Stay", 
+     x = "Region", y = "Average Length of Stay (days)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# By year
+
+uz_data %>%
+  ggplot(aes(x = as.character(year), y = LOS)) +
+  geom_boxplot() +
+  labs(title = "Average Length of Stay", subtitle = "by year",
+     x = "Year", y = "Average Length of Stay (days)") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+```{r LOS-histo}
+uz_data %>%
+  ggplot(aes(x = LOS)) +
+  geom_histogram(bins = 10) +
+  facet_wrap(~ year) +
+  labs(title = "Average Length of Stay", x = "Average Length of Stay (days)", 
+       y = "Number of Regions") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+Simple regressions (probably bad, I just don't really know what to do with time series)
+
+```{r LOS-regressions}
+uz_data %>%
+  filter(Region == "Tashkent city") %>%
+  ggplot(aes(x=year,y=LOS)) +
+  geom_smooth(method = "lm") + 
+  geom_line() +
+  labs(title = "Tashkent City: Average Length of Stay")
+LOS_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(LOS ~ year, data = filter(uz_data, Region == "Tashkent city"))
+tidy(LOS_model)
+glance(LOS_model)$p.value < 0.01
+
+uz_data %>%
+  filter(Region == "Navoiy") %>%
+  ggplot(aes(x=year,y=LOS)) +
+  geom_smooth(method = "lm") + 
+  geom_line() +
+  labs(title = "Navoiy: Average Length of Stay")
+LOS_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(LOS ~ year, data = filter(uz_data, Region == "Navoiy"))
+tidy(LOS_model)
+glance(LOS_model)$p.value < 0.01
+
+uz_data %>%
+  filter(Region == "Syrdarya") %>%
+  ggplot(aes(x=year,y=LOS)) +
+  geom_smooth(method = "lm") + 
+  geom_line() +
+  labs(title = "Syrdarya: Average Length of Stay")
+LOS_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(LOS ~ year, data = filter(uz_data, Region == "Syrdarya"))
+tidy(LOS_model)
+glance(LOS_model)$p.value < 0.01
+```
+
+
+
+We have evidence to support that average length of hospital stay per capita decreases by approximately -0.38 days per year in Tashkent City from 2000-2021, -0.32 days per year in Navoiy, -0.35 days per year in Syrdarya, and so on.
+
+**Some population data analysis**
+
+```{r pop-data}
+
+# What year?
+
+ggplot(data = filter(uz_data, 
+                     age_range != "Population"), 
+       mapping = aes(x = Region, 
+                     y = pop_in_age, 
+                     fill = fct_relevel(uz_data, 
+                              c("0-2", "3-5", "6-7","8-15")))) + 
+         geom_col(position = "fill", color = "black") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+
+ggplot(data = filter(age_structure, 
+                     age_range != "Population"), 
+       mapping = aes(x = Region, 
+                     y = pop_in_age, 
+                     fill = fct_relevel(age_range, 
+                              c("0-2", "3-5", "6-7","8-15")))) + 
+         geom_col(position = "stack", color = "black") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Population by Age Structure", y = "Population")
+
+```
+
+
+[Will be adding more exploratory analysis with multiple other indicators]
+
+
+```{r}
+
+
+na.omit(uz_data) %>%
+  group_by(Region) %>%
+  summarize(mean = mean(pc_cancer))
+
+
+
+uzbek_data %>%
+  na.omit() %>%
+  group_by(Region) %>%
+  summarize(mean_IMR = mean(infant_mortality_all),
+            mean_IMR_urban = mean(infant_mortality_urban),
+            mean_IMR_rural = mean(infant_mortality_rural)) %>% 
+  gather(key = IMR_type, value = value, mean_IMR:mean_IMR_rural) %>%
+  ggplot(mapping = aes(x=Region, y=value, fill=IMR_type)) +
+  geom_col(position = "dodge") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Infant Mortality Count in each Region", subtitle = "Urban/rural", y = "Infant morality (count)")
+
+
+
+## population data is in thousands -- IMR needs to be "per 100k"
+## messed up gotta do it by live births 
+
+
+uzbek_data %>%
+  na.omit() %>%
+  group_by(Region) %>%
+  summarize(mean_IMR = (mean(infant_mortality_all) / mean(pop)),
+            mean_IMR_urban = (mean(infant_mortality_urban) / mean(pop)),
+            mean_IMR_rural = (mean(infant_mortality_rural) / mean(pop))) %>% 
+  gather(key = IMR_type, value = value, mean_IMR:mean_IMR_rural) %>%
+  ggplot(mapping = aes(x=Region, y=value, fill=IMR_type)) +
+  geom_col(position = "dodge") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Infant Mortality Rate in each Region", subtitle = "Urban/rural", y = "Infant morality (per 100k population)")
+
+
+```
+
+

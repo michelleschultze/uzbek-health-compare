@@ -6,7 +6,6 @@ date: "2023-01-20"
 ---
 
 ```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
-install.packages("pls")
 library(readxl)
 library(tidyverse)
 library(broom)
@@ -24,8 +23,6 @@ pop_male <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xl
                       sheet = "pop-male")
 pop_female <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                       sheet = "pop-female")
-age_structure <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
-                        sheet = "age-structure")
 fertility <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "fertility")
 hospitals <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
@@ -36,8 +33,10 @@ nurses <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx
                          sheet = "nurses")
 birth_rate <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "birth-rate")
-IMR <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+IM_count <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "IMR")
+age_structure <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "age-structure")
 diabetes <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "diabetes")
 cancer <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
@@ -64,6 +63,8 @@ skin <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx",
                          sheet = "skin")
 TB <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "TB")
+births <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "live-births")
 
 
 ## TBA: condensing this so that folks at home don't have to change the path 
@@ -242,18 +243,18 @@ birth_rate <- birth_rate %>%
   mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
 
 
-IMR <- IMR %>% 
-  gather(key = year, value = infant_mortality, -Region, -urbanrural)
-IMR[["year"]] <- as.numeric(IMR$year)
-IMR[["infant_mortality"]] <- as.numeric(IMR$infant_mortality)
+IM_count <- IM_count %>% 
+  gather(key = year, value = infant_mortality_count, -Region, -urbanrural)
+IM_count[["year"]] <- as.numeric(IM_count$year)
+IM_count[["infant_mortality_count"]] <- as.numeric(IM_count$infant_mortality_count)
 
 # Extract vector for country-level
-uz_IMR <- IMR %>%
+uz_IM_count <- IM_count %>%
   filter(Region == "Republic of Uzbekistan, total population") %>%
   mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
 
 # Remove country-level data for further analysis
-IMR <- IMR %>%
+IM_count <- IM_count %>%
   filter(Region != "Republic of Uzbekistan, total population") %>%
   mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
 
@@ -505,6 +506,22 @@ TB <- TB %>%
 
 
 
+births <- births %>% 
+  gather(key = year, value = births_count, -Region) 
+births[["year"]] <- as.numeric(births$year)
+births[["births_count"]] <- as.numeric(births$births_count)
+
+# Extract vector for country-level
+uz_births <- births %>%
+  filter(Region == "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+births <- births %>%
+  filter(Region != "Republic of Uzbekistan") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
 
 
 ```
@@ -521,7 +538,7 @@ diseases <- diabetes %>%
   merge(injury, by = c("Region", "year"), all = TRUE) %>%
   merge(preg_compl, by = c("Region", "year"), all = TRUE) %>%
   merge(respiratory, by = c("Region", "year"), all = TRUE) %>%
-  merge(skin, by = c("Region", "year"), all = TRUE) 
+  merge(skin, by = c("Region", "year"), all = TRUE)
 ```
 
 
@@ -533,17 +550,18 @@ uzbek_data <- diseases %>%
   merge(doctors, by = c("Region", "year"), all = TRUE) %>%
   merge(nurses, by = c("Region", "year"), all = TRUE) %>%
   merge(birth_rate, by = c("Region", "year"), all = TRUE) %>%
-  merge(mutate(filter(IMR, urbanrural == "all"), infant_mortality_all = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
-  merge(mutate(filter(IMR, urbanrural == "urban"), infant_mortality_urban = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
-  merge(mutate(filter(IMR, urbanrural == "rural"), infant_mortality_rural = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(IM_count, urbanrural == "all"), infant_mortality_count_all = infant_mortality_count), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(IM_count, urbanrural == "urban"), infant_mortality_count_urban = infant_mortality_count), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(IM_count, urbanrural == "rural"), infant_mortality_count_rural = infant_mortality_count), by = c("Region", "year"), all = TRUE) %>%
   merge(fertility, by = c("Region", "year"), all = TRUE) %>%
   merge(length_of_stay, by = c("Region", "year"), all = TRUE) %>%
   merge(pop_all, by = c("Region", "year"), all = TRUE) %>%
   merge(pop_male, by = c("Region", "year"), all = TRUE) %>%
   merge(pop_female, by = c("Region", "year"), all = TRUE) %>%
-  merge(TB, by = c("Region", "year"), all = TRUE)
+  merge(TB, by = c("Region", "year"), all = TRUE) %>%
+  merge(births, by = c("Region", "year"), all = TRUE)
 
-# Per capitas
+# Per capitas (infant mortality is currently a count and must be converted to rate with live birth data)
 uzbek_data <- uzbek_data %>%
   mutate(pc_beds = 1000 * beds_count / pop) %>%
   mutate(pc_cancer = 1000 * cancer_count / pop) %>%
@@ -553,7 +571,10 @@ uzbek_data <- uzbek_data %>%
   mutate(pc_TB = 1000 * tuberculosis / pop) %>%
   mutate(pc_injury = 1000 * injury_count / pop) %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
-  mutate(male_percent = pop_m / pop)
+  mutate(male_percent = pop_m / pop) %>%
+  mutate(IMR_all = 1000 * infant_mortality_count_all / births_count) %>%
+  mutate(IMR_rural = 1000 * infant_mortality_count_rural / births_count) %>%
+  mutate(IMR_urban = 1000 * infant_mortality_count_urban / births_count)
 
 
 
@@ -609,14 +630,15 @@ nat_uzbek_data <- nat_diseases %>%
   merge(uz_doctors, by = c("Region", "year"), all = TRUE) %>%
   merge(uz_nurses, by = c("Region", "year"), all = TRUE) %>%
   merge(uz_birth_rate, by = c("Region", "year"), all = TRUE) %>%
-  merge(mutate(filter(uz_IMR, urbanrural == "all"), infant_mortality_all = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
-  merge(mutate(filter(uz_IMR, urbanrural == "urban"), infant_mortality_urban = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
-  merge(mutate(filter(uz_IMR, urbanrural == "rural"), infant_mortality_rural = infant_mortality), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(uz_IM_count, urbanrural == "all"), infant_mortality_count_all = infant_mortality_count), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(uz_IM_count, urbanrural == "urban"), infant_mortality_count_urban = infant_mortality_count), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(uz_IM_count, urbanrural == "rural"), infant_mortality_count_rural = infant_mortality_count), by = c("Region", "year"), all = TRUE) %>%
   merge(uz_fertility, by = c("Region", "year"), all = TRUE) %>%
   merge(uz_TB, by = c("Region", "year"), all = TRUE) %>%
   merge(nat_pop_all, by = c("Region", "year"), all = TRUE) %>%
   merge(nat_pop_male, by = c("Region", "year"), all = TRUE) %>%
-  merge(nat_pop_female, by = c("Region", "year"), all = TRUE) 
+  merge(nat_pop_female, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_births, by = c("Region", "year"), all = TRUE) 
 
 # Per capitas
 nat_uzbek_data <- nat_uzbek_data %>%
@@ -628,12 +650,18 @@ nat_uzbek_data <- nat_uzbek_data %>%
   mutate(pc_TB = 1000 * tuberculosis / pop) %>%
   mutate(pc_injury = 1000 * injury_count / pop) %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
-  mutate(male_percent = pop_m / pop)
+  mutate(male_percent = pop_m / pop) %>%
+  mutate(IMR_all = 1000 * infant_mortality_count_all / births_count) %>%
+  mutate(IMR_rural = 1000 * infant_mortality_count_rural / births_count) %>%
+  mutate(IMR_urban = 1000 * infant_mortality_count_urban / births_count)
 
 
 
+## drop intermediate variables
 
-## TBA: drop intermediate columns (such as for infant mortality) but we can leave them for right now because they don't matter
+uzbek_data <- uzbek_data %>%
+  select(!c(urbanrural.x, urbanrural.y, urbanrural, infant_mortality_count.x, infant_mortality_count.y, infant_mortality_count))
+
 ```
 
 
@@ -644,5 +672,8 @@ write.csv(uzbek_data, "/Users/michelle/uzbek-healthcare/data//uzbekistan_data_ti
 
 write.csv(nat_uzbek_data, "/Users/michelle/uzbek-healthcare/data//national_uzbekistan_data_tidy.csv", row.names=FALSE)
 
+write.csv(age_structure, "/Users/michelle/uzbek-healthcare/data//uzbekistan_age_structure_2022.csv", row.names=FALSE)
+
 ```
+
 
