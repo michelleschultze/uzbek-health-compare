@@ -15,6 +15,7 @@ library(pls)
 
 uz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/uzbekistan_data_tidy.csv")
 nat_uz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/national_uzbekistan_data_tidy.csv")
+age_structure <- read_csv("/Users/michelle/uzbek-healthcare/data/uzbekistan_age_structure_2022.csv")
 
 theme_bw()
 ```
@@ -446,12 +447,23 @@ However, we don't have evidence to support such a relationship in Tashkent ot Sy
 **Charts**
 
 ```{r LOS-plots}
-ggplot(uz_data, aes(x = year, y = LOS, color = Region)) +
+yrs <- uz_data %>%
+  filter(LOS != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- yrs$year[2]
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+ggplot(aes(x = year, y = LOS, color = Region)) +
   geom_line() +
   labs(title = "Average Length of Stay", 
        x = "Year", y = "Average Length of Stay (days)")
 
-ggplot(uz_data, aes(x = year, y = LOS, color = Region)) +
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+ggplot(aes(x = year, y = LOS, color = Region)) +
   geom_line() +
   facet_wrap(~ Region) + 
   labs(title = "Average Length of Stay", 
@@ -463,6 +475,7 @@ ggplot(uz_data, aes(x = year, y = LOS, color = Region)) +
 # By Region
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = Region, y = LOS)) +
   geom_boxplot() +
   labs(title = "Average Length of Stay", 
@@ -472,6 +485,7 @@ uz_data %>%
 # By year
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = as.character(year), y = LOS)) +
   geom_boxplot() +
   labs(title = "Average Length of Stay", subtitle = "by year",
@@ -481,6 +495,7 @@ uz_data %>%
 
 ```{r LOS-histo}
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   ggplot(aes(x = LOS)) +
   geom_histogram(bins = 10) +
   facet_wrap(~ year) +
@@ -493,6 +508,7 @@ Simple regressions (probably bad, I just don't really know what to do with time 
 
 ```{r LOS-regressions}
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region == "Tashkent city") %>%
   ggplot(aes(x=year,y=LOS)) +
   geom_smooth(method = "lm") + 
@@ -505,6 +521,7 @@ tidy(LOS_model)
 glance(LOS_model)$p.value < 0.01
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region == "Navoiy") %>%
   ggplot(aes(x=year,y=LOS)) +
   geom_smooth(method = "lm") + 
@@ -517,6 +534,7 @@ tidy(LOS_model)
 glance(LOS_model)$p.value < 0.01
 
 uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
   filter(Region == "Syrdarya") %>%
   ggplot(aes(x=year,y=LOS)) +
   geom_smooth(method = "lm") + 
@@ -527,84 +545,171 @@ LOS_model <- linear_reg() %>%
   fit(LOS ~ year, data = filter(uz_data, Region == "Syrdarya"))
 tidy(LOS_model)
 glance(LOS_model)$p.value < 0.01
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x=year,y=LOS)) +
+  geom_smooth(method = "lm", aes(color = Region), se = FALSE) + 
+  labs(title = "Syrdarya: Average Length of Stay")
+LOS_model <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(LOS ~ year, data = uz_data)
+tidy(LOS_model)
+glance(LOS_model)$p.value < 0.01
 ```
 
 
 
 We have evidence to support that average length of hospital stay per capita decreases by approximately -0.38 days per year in Tashkent City from 2000-2021, -0.32 days per year in Navoiy, -0.35 days per year in Syrdarya, and so on.
 
-**Some population data analysis**
+**Population analysis**
 
 ```{r pop-data}
 
-# What year?
-
-ggplot(data = filter(uz_data, 
-                     age_range != "Population"), 
-       mapping = aes(x = Region, 
+age_structure %>%
+  filter(age_range != "Population") %>%
+ggplot(mapping = aes(x = reorder(Region, -pop_in_age), 
                      y = pop_in_age, 
-                     fill = fct_relevel(uz_data, 
+                     fill = fct_relevel(age_range, 
                               c("0-2", "3-5", "6-7","8-15")))) + 
-         geom_col(position = "fill", color = "black") + 
+         geom_col(position = "fill", color = "black") +
+  labs(title = "Population by Age Structure, 2022", y = "Population") +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 
 ggplot(data = filter(age_structure, 
                      age_range != "Population"), 
-       mapping = aes(x = Region, 
+       mapping = aes(x = reorder(Region, -pop_in_age),
                      y = pop_in_age, 
                      fill = fct_relevel(age_range, 
                               c("0-2", "3-5", "6-7","8-15")))) + 
          geom_col(position = "stack", color = "black") + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  labs(title = "Population by Age Structure", y = "Population")
+  labs(title = "Population by Age Structure, 2022", y = "Population")
 
 ```
 
 
-[Will be adding more exploratory analysis with multiple other indicators]
+```{r urbanrural}
+
+yrs <- uz_data %>%
+  filter(pop_urban != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- yrs$year[2]
+
+
+uzbek_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  filter(year == 2020) %>%
+  group_by(Region) %>% 
+  ggplot(mapping = aes(x=reorder(Region, urban_percent), y=urban_percent)) +
+  geom_col(fill = "cadetblue4") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Urban percentage of population, 2020", y = "% Urban")
+
+
+packages<-c(
+  "pls",
+  "haven",
+  "maps",
+  "rgdal",
+  "maptools",
+  "sf",
+  "terra",
+  "plm",
+  "AER",
+  "stargazer",
+  "ISLR2",
+  "leaps",
+  "glmnet",
+  "tmap"
+)
+
+map_1 <- readOGR( 
+  dsn= paste0("/Users/michelle/uzbek-healthcare/data/uzbekistan_map") , 
+  layer="gadm41_UZB_1",
+  verbose=FALSE)
+
+map_1@data$NAME_1
+map_1@data$NAME_1 <- c("Andijan", "Bukhara", "Fergana"  ,  "Jizah"  ,     "Namangan"   , "Navoiy"      ,"Karakalpakstan", "Kashkadarya"     ,  "Samarkand"   ,  "Syrdarya"   ,  "Surkhandarya","Tashkent"    ,   "Tashkent city"  ,  "Khorezm")
+
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2020), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(urban_percent == as.numeric(urban_percent)) %>%
+  select(urban_percent)
+
+map_1@data$urban_percent <- as.numeric(unlist(test))
+
+map_1@data %>% 
+  ggplot( aes(x=as.numeric(urban_percent))) + 
+    geom_histogram(bins=10, fill='#69b3a2', color='white')
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Reds") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(map_1@data$urban_percent, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Urban population as percent of total")
+
+```
+
+
+
+
+
+*Infant Mortality Rate*
+
+
+```{r IMR}
+yrs <- uz_data %>%
+  filter(infant_mortality_count_all != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- yrs$year[2]
+
+
+uzbek_data %>%
+  filter(year == 2020) %>%
+  na.omit() %>%
+  group_by(Region) %>% 
+  ggplot(mapping = aes(x=Region, y=IMR_all)) +
+  geom_col(fill = "sienna2") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Infant Mortality in each Region, 2020", y = "Infant morality")
+
+
+```
 
 
 ```{r}
 
 
-na.omit(uz_data) %>%
-  group_by(Region) %>%
-  summarize(mean = mean(pc_cancer))
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = IMR_all, color = Region)) +
+  geom_line() +
+  labs(title = "Infant Mortality Rate", 
+       x = "Year", y = "Infant Mortality Rate")
 
 
 
-uzbek_data %>%
-  na.omit() %>%
-  group_by(Region) %>%
-  summarize(mean_IMR = mean(infant_mortality_all),
-            mean_IMR_urban = mean(infant_mortality_urban),
-            mean_IMR_rural = mean(infant_mortality_rural)) %>% 
-  gather(key = IMR_type, value = value, mean_IMR:mean_IMR_rural) %>%
-  ggplot(mapping = aes(x=Region, y=value, fill=IMR_type)) +
-  geom_col(position = "dodge") + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  labs(title = "Infant Mortality Count in each Region", subtitle = "Urban/rural", y = "Infant morality (count)")
-
-
-
-## population data is in thousands -- IMR needs to be "per 100k"
-## messed up gotta do it by live births 
-
-
-uzbek_data %>%
-  na.omit() %>%
-  group_by(Region) %>%
-  summarize(mean_IMR = (mean(infant_mortality_all) / mean(pop)),
-            mean_IMR_urban = (mean(infant_mortality_urban) / mean(pop)),
-            mean_IMR_rural = (mean(infant_mortality_rural) / mean(pop))) %>% 
-  gather(key = IMR_type, value = value, mean_IMR:mean_IMR_rural) %>%
-  ggplot(mapping = aes(x=Region, y=value, fill=IMR_type)) +
-  geom_col(position = "dodge") + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  labs(title = "Infant Mortality Rate in each Region", subtitle = "Urban/rural", y = "Infant morality (per 100k population)")
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = IMR_all, color = Region)) +
+  geom_line() +
+  labs(title = "Infant Mortality Rate", 
+       x = "Year", y = "Infant Mortality Rate") +
+  scale_fill_discrete(name = "Infant Mortality Rate", labels = c("", "B", "C"))
 
 
 ```
-
 

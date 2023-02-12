@@ -65,7 +65,8 @@ TB <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx",
                          sheet = "TB")
 births <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "live-births")
-
+pop_urbanrural <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "pop-urbanrural")
 
 ## TBA: condensing this so that folks at home don't have to change the path 
 ```
@@ -524,6 +525,18 @@ births <- births %>%
 
 
 
+
+
+
+pop_urbanrural <- pop_urbanrural %>% 
+  gather(key = year, value = pop_count, -Region, -urbanrural)
+pop_urbanrural[["year"]] <- as.numeric(pop_urbanrural$year)
+pop_urbanrural[["pop_count"]] <- as.numeric(pop_urbanrural$pop_count)
+
+
+
+
+
 ```
 
 ```{r merge-diseases, message=FALSE, warning=FALSE, include=FALSE}
@@ -559,7 +572,20 @@ uzbek_data <- diseases %>%
   merge(pop_male, by = c("Region", "year"), all = TRUE) %>%
   merge(pop_female, by = c("Region", "year"), all = TRUE) %>%
   merge(TB, by = c("Region", "year"), all = TRUE) %>%
-  merge(births, by = c("Region", "year"), all = TRUE)
+  merge(births, by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(pop_urbanrural, urbanrural == "urban"), pop_urban = pop_count), by = c("Region", "year"), all = TRUE) %>%
+  merge(mutate(filter(pop_urbanrural, urbanrural == "rural"), pop_rural = pop_count), by = c("Region", "year"), all = TRUE) 
+
+
+
+
+## drop intermediate variables
+
+uzbek_data <- uzbek_data %>%
+  select(!c(urbanrural.x, urbanrural.y, urbanrural, infant_mortality_count.x, infant_mortality_count.y, infant_mortality_count, pop_count.x, pop_count.y))
+
+
+
 
 # Per capitas (infant mortality is currently a count and must be converted to rate with live birth data)
 uzbek_data <- uzbek_data %>%
@@ -573,8 +599,7 @@ uzbek_data <- uzbek_data %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
   mutate(male_percent = pop_m / pop) %>%
   mutate(IMR_all = 1000 * infant_mortality_count_all / births_count) %>%
-  mutate(IMR_rural = 1000 * infant_mortality_count_rural / births_count) %>%
-  mutate(IMR_urban = 1000 * infant_mortality_count_urban / births_count)
+  mutate(urban_percent = pop_urban / pop)
 
 
 
@@ -657,10 +682,6 @@ nat_uzbek_data <- nat_uzbek_data %>%
 
 
 
-## drop intermediate variables
-
-uzbek_data <- uzbek_data %>%
-  select(!c(urbanrural.x, urbanrural.y, urbanrural, infant_mortality_count.x, infant_mortality_count.y, infant_mortality_count))
 
 ```
 
