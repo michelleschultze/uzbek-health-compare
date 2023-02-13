@@ -594,7 +594,7 @@ uzbek_data <- uzbek_data %>%
   mutate(pc_circulatory = 1000 * circulatory_count / pop) %>%
   mutate(pc_diabetes = 1000 * diabetes_count / pop) %>%
   mutate(pc_digestive = 1000 * digestive_count / pop) %>%
-  mutate(pc_TB = 1000 * tuberculosis / pop) %>%
+  mutate(pc_TB = tuberculosis / pop) %>%
   mutate(pc_injury = 1000 * injury_count / pop) %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
   mutate(male_percent = pop_m / pop) %>%
@@ -665,14 +665,14 @@ nat_uzbek_data <- nat_diseases %>%
   merge(nat_pop_female, by = c("Region", "year"), all = TRUE) %>%
   merge(uz_births, by = c("Region", "year"), all = TRUE) 
 
-# Per capitas
+# Per capitas (population & indicator counts already in thousands, convert to per 1k people)
 nat_uzbek_data <- nat_uzbek_data %>%
   mutate(pc_beds = 1000 * beds_count / pop) %>%
   mutate(pc_cancer = 1000 * cancer_count / pop) %>%
   mutate(pc_circulatory = 1000 * circulatory_count / pop) %>%
   mutate(pc_diabetes = 1000 * diabetes_count / pop) %>%
   mutate(pc_digestive = 1000 * digestive_count / pop) %>%
-  mutate(pc_TB = 1000 * tuberculosis / pop) %>%
+  mutate(pc_TB = tuberculosis / pop) %>%
   mutate(pc_injury = 1000 * injury_count / pop) %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
   mutate(male_percent = pop_m / pop) %>%

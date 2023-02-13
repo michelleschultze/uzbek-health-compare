@@ -1,0 +1,55 @@
+---
+title: "Uzbekistan Health Reforms: Synthetic Control Model (Uzbekistan)"
+author: Michelle Schultze
+output: pdf_document
+date: "2023-01-20"
+---
+
+Trying PCR model
+```{r principal components}
+## trying out principal components model
+## https://www.statology.org/principal-components-regression-in-r/ 
+  
+
+set.seed(1)
+
+model <- pcr(LOS ~ pc_beds + pop + pc_hosp + doctors_per_capita + pc_cancer + pc_TB + fert_rate + pc_injury + male_percent + urban_percent + IMR_all, data = uzbek_data, scale=TRUE, validation="CV")
+
+summary(model)
+
+validationplot(model)
+validationplot(model, val.type="MSEP")
+validationplot(model, val.type="R2")
+
+# optimal to use 7 PC because RMSEP increases after 7 components
+
+train <- sample_n(uzbek_data, 150, replace = TRUE) %>%
+  select(c("LOS", "pc_beds", "pop", "pc_hosp", "doctors_per_capita", "pc_cancer", "pc_TB", "fert_rate", "pc_injury" ,"male_percent", "urban_percent", "IMR_all"))
+y_test <- uzbek_data[c("LOS")]
+test <- uzbek_data[c("LOS", "pc_beds", "pop", "pc_hosp", "doctors_per_capita", "pc_cancer", "pc_TB", "fert_rate", "pc_injury" ,"male_percent", "urban_percent", "IMR_all")]
+
+model <- pcr(LOS ~ pc_beds + pop + pc_hosp + doctors_per_capita + pc_cancer + pc_TB + fert_rate + pc_injury + male_percent + urban_percent + IMR_all, data=train, scale=TRUE, validation="CV", ncomp = 2)
+pcr_pred <- predict(model, test, ncomp = 2)
+print(model)
+sqrt(mean(complete.cases((as.numeric(pcr_pred) - as.numeric(unlist(y_test)))^2)))
+
+
+## i'll figure this out later
+
+
+
+
+```
+
+
+```{r}
+LOS_index <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(LOS ~ pc_beds + pop + pc_hosp + doctors_per_capita + pc_cancer + pc_TB + fert_rate + pc_injury + male_percent + urban_percent + IMR_all, data = uz_data)
+LOS_index <- tidy(LOS_index)
+glance(LOS_index)$p.value < 0.01
+
+data.frame(LOS_index$term, LOS_index$estimate)
+
+```
+
