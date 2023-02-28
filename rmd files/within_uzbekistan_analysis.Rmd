@@ -1,31 +1,34 @@
 ---
-title: "Uzbekistan Health Reforms: Within Uzbekistan Analysis"
-author: Michelle Schultze
-output: pdf_document
+title: 'Uzbekistan Health Reforms: Within Uzbekistan Analysis'
+author: "Michelle Schultze"
 date: "2023-01-22"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
-install.packages("readxl", repos = "http://cran.us.r-project.org")
-install.packages("tidyverse", repos = "http://cran.us.r-project.org")
-install.packages("broom", repos = "http://cran.us.r-project.org")
-install.packages("tidymodels", repos = "http://cran.us.r-project.org")
-install.packages("ggplot2", repos = "http://cran.us.r-project.org")
-install.packages("pls", repos = "http://cran.us.r-project.org")
-install.packages("haven", repos = "http://cran.us.r-project.org")
-install.packages("maps", repos = "http://cran.us.r-project.org")
-install.packages("rgdal", repos = "http://cran.us.r-project.org")
-install.packages("maptools", repos = "http://cran.us.r-project.org")
-install.packages("sf", repos = "http://cran.us.r-project.org")
-install.packages("terra", repos = "http://cran.us.r-project.org")
-install.packages("plm", repos = "http://cran.us.r-project.org")
-install.packages("AER", repos = "http://cran.us.r-project.org")
-install.packages("stargazer", repos = "http://cran.us.r-project.org")
-install.packages("ISLR2", repos = "http://cran.us.r-project.org")
-install.packages("leaps", repos = "http://cran.us.r-project.org")
-install.packages("glmnet", repos = "http://cran.us.r-project.org")
-install.packages("tmap", repos = "http://cran.us.r-project.org")
-tinytex::install_tinytex()
+#install.packages("readxl", repos = "http://cran.us.r-project.org")
+#install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+#install.packages("broom", repos = "http://cran.us.r-project.org")
+#install.packages("tidymodels", repos = "http://cran.us.r-project.org")
+#install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+#install.packages("pls", repos = "http://cran.us.r-project.org")
+#install.packages("haven", repos = "http://cran.us.r-project.org")
+#install.packages("maps", repos = "http://cran.us.r-project.org")
+#install.packages("rgdal", repos = "http://cran.us.r-project.org")
+#install.packages("maptools", repos = "http://cran.us.r-project.org")
+#install.packages("sf", repos = "http://cran.us.r-project.org")
+#install.packages("terra", repos = "http://cran.us.r-project.org")
+#install.packages("plm", repos = "http://cran.us.r-project.org")
+#install.packages("AER", repos = "http://cran.us.r-project.org")
+#install.packages("stargazer", repos = "http://cran.us.r-project.org")
+#install.packages("ISLR2", repos = "http://cran.us.r-project.org")
+#install.packages("leaps", repos = "http://cran.us.r-project.org")
+#install.packages("glmnet", repos = "http://cran.us.r-project.org")
+#install.packages("tmap", repos = "http://cran.us.r-project.org")
+#tinytex::install_tinytex()
 
 library(readxl)
 library(tidyverse)
@@ -1145,6 +1148,528 @@ nat_uz_data %>%
 
 ```
 
+
+
+
+
+
+*Respiratory diseases*
+
+```{r respiratory-map}
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2019), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_respiratory == as.numeric(pc_respiratory)) %>%
+  select(pc_respiratory)
+
+map_1@data$pc_respiratory <- as.numeric(unlist(test))
+
+map_1@data %>% 
+  ggplot( aes(x=as.numeric(pc_respiratory))) + 
+    geom_histogram(bins=10, fill='#69b3a2', color='white')
+
+library(RColorBrewer)
+my_colors <- brewer.pal(7, "Reds") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(map_1@data$pc_respiratory, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Respiratory diseases per capita, 2019")
+
+
+
+
+
+
+## excluding the outlier, tashkent city
+
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2019), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_respiratory == as.numeric(pc_respiratory)) %>%
+  mutate(pc_respiratory = ifelse(Region == "Tashkent city", NA, pc_respiratory)) %>%
+  select(pc_respiratory)
+
+map_1@data$pc_respiratory <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Reds") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$pc_respiratory, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Respiratory Disease rate, 2019 (excl. Tashkent city)")
+
+
+```
+
+```{r respiratory-col}
+yrs <- uz_data %>%
+  filter(pc_respiratory != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- yrs$year[2]
+
+
+uz_data %>%
+  na.omit() %>%
+  group_by(Region) %>% 
+  ggplot(mapping = aes(x=reorder(Region, -pc_respiratory), y=pc_respiratory)) +
+  geom_bar(data = filter(uz_data, year == 2018), stat = "identity", linetype = "blank", fill = "coral") + 
+  geom_bar(data = filter(uz_data, year == 2000), stat = "identity", linetype = "dashed", fill = NA, color = "black") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Respiratory disease rate in each Region, 2000 - 2018", y = "Respiratory disease rate")
+
+
+```
+
+```{r respiratory-lines}
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_respiratory, color = Region)) +
+  geom_line() +
+  labs(title = "Respiratory disease rate per capita", 
+       x = "Year", y = "Respiratory disease rate")
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_respiratory, color = Region)) +
+  facet_wrap(Region ~ .) +
+  geom_line() +
+  labs(title = "Respiratory disease rate per capita", 
+       x = "Year", y = "Respiratory disease rate")
+
+
+
+
+
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_respiratory, color = Region)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  labs(title = "Infant Mortality Rate", 
+       x = "Year", y = "Infant Mortality Rate") +
+  scale_fill_discrete(name = "Infant Mortality Rate", labels = c("", "B", "C"))
+
+
+```
+
+
+
+
+
+*Genitourinary diseases*
+
+```{r genitourinary-map}
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2019), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_genitourinary == as.numeric(pc_genitourinary)) %>%
+  select(pc_genitourinary)
+
+map_1@data$pc_genitourinary <- as.numeric(unlist(test))
+
+map_1@data %>% 
+  ggplot( aes(x=as.numeric(pc_genitourinary))) + 
+    geom_histogram(bins=10, fill='#49b0a2', color='white')
+
+library(RColorBrewer)
+my_colors <- brewer.pal(7, "Greens") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(map_1@data$pc_genitourinary, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Genitourinary diseases per capita, 2019")
+
+
+```
+
+```{r genitourinary-col}
+yrs <- uz_data %>%
+  filter(pc_genitourinary != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- 2019 #weird data
+
+
+uz_data %>%
+  na.omit() %>%
+  group_by(Region) %>% 
+  ggplot(mapping = aes(x=reorder(Region, -pc_genitourinary), y=pc_genitourinary)) +
+  geom_bar(data = filter(uz_data, year == 2019), stat = "identity", linetype = "blank", fill = "lightblue3") + 
+  geom_bar(data = filter(uz_data, year == 2000), stat = "identity", linetype = "dashed", fill = NA, color = "black") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Genitourinary disease rate in each Region, 2000 - 2019", y = "Genitourinary disease rate")
+
+
+```
+
+```{r genitourinary-lines}
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_genitourinary, color = Region)) +
+  geom_line() +
+  labs(title = "Genitourinary disease per capita", 
+       x = "Year", y = "Genitourinary disease rate")
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_genitourinary, color = Region)) +
+  geom_line() + 
+  facet_wrap(Region ~ .) +
+  labs(title = "Genitourinary disease per capita", 
+       x = "Year", y = "Genitourinary disease rate")
+
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_genitourinary, color = Region)) +
+  geom_smooth(method = "lm") +
+  facet_wrap(Region ~ .) +
+  labs(title = "Genitourinary disease rate", 
+       x = "Year", y = "Genitourinary disease rate")
+
+
+
+
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_genitourinary, color = Region)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  labs(title = "Genitourinary disease rate", 
+       x = "Year", y = "Genitourinary disease Rate") +
+  scale_fill_discrete(name = "Genitourinary disease Rate", labels = c("", "B", "C"))
+
+
+```
+
+
+```{r pc_genitourinary-boxplots}
+# By Region
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = Region, y = pc_genitourinary)) +
+  geom_boxplot() +
+  labs(title = "Genitourinary disease rate", 
+     x = "Region", y = "Genitourinary disease rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# By year
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = as.character(year), y = pc_genitourinary)) +
+  geom_boxplot() +
+  labs(title = "Genitourinary disease rate", subtitle = "by year",
+     x = "Year", y = "Genitourinary disease rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+
+
+
+
+
+
+*Intestinal diseases*
+
+```{r intestinal-map}
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2019), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_intestinal == as.numeric(pc_intestinal)) %>%
+  select(pc_intestinal)
+
+map_1@data$pc_intestinal <- as.numeric(unlist(test))
+
+map_1@data %>% 
+  ggplot( aes(x=as.numeric(pc_intestinal))) + 
+    geom_histogram(bins=10, fill='#49b0a2', color='white')
+
+library(RColorBrewer)
+my_colors <- brewer.pal(7, "Purples") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(map_1@data$pc_intestinal, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Intestinal diseases per capita, 2019")
+
+
+
+
+
+## excluding the outlier, Tashkent city
+
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2019), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_intestinal == as.numeric(pc_intestinal)) %>%
+  mutate(pc_intestinal = ifelse(Region == "Tashkent city", NA, pc_intestinal)) %>%
+  select(pc_intestinal)
+
+map_1@data$pc_intestinal <- as.numeric(unlist(test))
+
+map_1@data %>% 
+  ggplot( aes(x=as.numeric(pc_intestinal))) + 
+    geom_histogram(bins=10, fill='#69b3a2', color='white')
+
+library(RColorBrewer)
+my_colors <- brewer.pal(7, "Purples") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(map_1@data$pc_intestinal, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Intestinal Diseases per capita, 2019, (excl. Tashkent city)")
+
+
+
+
+```
+
+```{r intestinal-col}
+yrs <- uz_data %>%
+  filter(pc_intestinal != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- 2019 #weird data
+
+
+uz_data %>%
+  na.omit() %>%
+  group_by(Region) %>% 
+  ggplot(mapping = aes(x=reorder(Region, -pc_intestinal), y=pc_intestinal)) +
+  geom_bar(data = filter(uz_data, year == 2019), stat = "identity", linetype = "blank", fill = "purple3") + 
+  geom_bar(data = filter(uz_data, year == 2000), stat = "identity", linetype = "dashed", fill = NA, color = "black") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Intestinal disease rate in each Region, 2000 - 2019", y = "Intestinal disease rate")
+
+
+```
+
+```{r intestinal-lines}
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_intestinal, color = Region)) +
+  geom_line() +
+  labs(title = "Intestinal disease per capita", 
+       x = "Year", y = "Intestinal disease rate")
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_intestinal, color = Region)) +
+  geom_line() + 
+  facet_wrap(Region ~ .) +
+  labs(title = "Intestinal disease per capita", 
+       x = "Year", y = "Intestinal disease rate")
+
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_intestinal, color = Region)) +
+  geom_smooth(method = "lm") +
+  facet_wrap(Region ~ .) +
+  labs(title = "Intestinal disease rate", 
+       x = "Year", y = "Intestinal disease rate")
+
+
+
+
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_intestinal, color = Region)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  labs(title = "Intestinal disease rate", 
+       x = "Year", y = "Intestinal disease Rate") +
+  scale_fill_discrete(name = "Intestinal disease Rate", labels = c("", "B", "C"))
+
+
+```
+
+
+```{r pc_intestinal-boxplots}
+# By Region
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = Region, y = pc_intestinal)) +
+  geom_boxplot() +
+  labs(title = "Intestinal disease rate", 
+     x = "Region", y = "Intestinal disease rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# By year
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = as.character(year), y = pc_intestinal)) +
+  geom_boxplot() +
+  labs(title = "Intestinal disease rate", subtitle = "by year",
+     x = "Year", y = "Intestinal disease rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+
+
+
+
+
+
+*Viral Hepatitis*
+
+```{r hep-map}
+test <- data.frame(map_1@data$NAME_1)
+test <- test %>%
+  mutate(Region = map_1.data.NAME_1) %>% 
+  merge(filter(uz_data, year == 2019), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_hep == as.numeric(pc_hep)) %>%
+  select(pc_hep)
+
+map_1@data$pc_hep <- as.numeric(unlist(test))
+
+map_1@data %>% 
+  ggplot( aes(x=as.numeric(pc_hep))) + 
+    geom_histogram(bins=10, fill='#49b0a2', color='white')
+
+library(RColorBrewer)
+my_colors <- brewer.pal(7, "Oranges") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(map_1@data$pc_hep, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(map_1 , col=my_colors, main = "Viral Hepatitis per capita, 2019")
+
+
+
+
+```
+
+```{r hep-col}
+yrs <- uz_data %>%
+  filter(pc_hep != 0) %>%
+  select(year) %>%
+  slice(1, n()) 
+yr_start <- yrs$year[1]
+yr_end <- 2019 #weird data
+
+
+uz_data %>%
+  na.omit() %>%
+  group_by(Region) %>% 
+  ggplot(mapping = aes(x=reorder(Region, -pc_hep), y=pc_hep)) +
+  geom_bar(data = filter(uz_data, year == 2019), stat = "identity", linetype = "blank", fill = "brown2") + 
+  geom_bar(data = filter(uz_data, year == 2000), stat = "identity", linetype = "dashed", fill = NA, color = "black") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Viral Hepatitis rate in each Region, 2000 - 2019", y = "Viral Hepatitis rate")
+
+
+```
+
+```{r hep-lines}
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_hep, color = Region)) +
+  geom_line() +
+  labs(title = "Viral Hepatitis per capita", 
+       x = "Year", y = "Viral Hepatitis rate")
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_hep, color = Region)) +
+  geom_line() + 
+  facet_wrap(Region ~ .) +
+  labs(title = "Viral Hepatitis per capita", 
+       x = "Year", y = "Viral Hepatitis rate")
+
+
+
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_hep, color = Region)) +
+  geom_smooth(method = "lm") +
+  facet_wrap(Region ~ .) +
+  labs(title = "Viral Hepatitis rate", 
+       x = "Year", y = "Viral Hepatitis rate")
+
+
+
+
+nat_uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = year, y = pc_hep, color = Region)) +
+  geom_line() +
+  geom_smooth(method = "lm") +
+  labs(title = "Viral Hepatitis rate", 
+       x = "Year", y = "Viral Hepatitis Rate") +
+  scale_fill_discrete(name = "Viral Hepatitis Rate", labels = c("", "B", "C"))
+
+
+```
+
+
+```{r pc_hep-boxplots}
+# By Region
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = Region, y = pc_hep)) +
+  geom_boxplot() +
+  labs(title = "Viral Hepatitis rate", 
+     x = "Region", y = "Viral Hepatitis rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+# By year
+
+uz_data %>%
+  filter(year >= yr_start, year <= yr_end) %>%
+  ggplot(aes(x = as.character(year), y = pc_hep)) +
+  geom_boxplot() +
+  labs(title = "Viral Hepatitis rate", subtitle = "by year",
+     x = "Year", y = "Viral Hepatitis rate") + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
 
 
 

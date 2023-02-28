@@ -1,0 +1,365 @@
+---
+title: "Uzbekistan Health Reforms: Tidying the Data (Kyzylorda region, Kazakhstan)"
+author: Michelle Schultze
+output: pdf_document
+date: "2023-02-25"
+---
+
+```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
+library(readxl)
+library(tidyverse)
+library(broom)
+library(tidymodels)
+library(ggplot2)
+library(pls)
+
+doctors_per_capita <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                             sheet = "doctors-per-capita")
+length_of_stay <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                             sheet = "LOS")
+pop_all <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                      sheet = "pop")
+pop_male <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                      sheet = "pop-male")
+pop_female <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                      sheet = "pop-female")
+births <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "live-births")
+pc_beds <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_beds")
+hosp <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "hosp")
+urban_percent <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "urban-percent")
+IMR <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "IMR")
+pc_cancer <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_cancer")
+pc_diabetes <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_diabetes")
+pc_TB <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_TB")
+pc_asthma <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_asthma")
+pc_injury <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_injury")
+pc_genitourinary <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_genitourinary")
+pc_digestive <- read_excel("/Users/michelle/uzbek-healthcare/data/kyzylorda_data.xlsx", 
+                         sheet = "pc_digestive")
+```
+
+```{r tidying}
+pc_TB <- pc_TB %>% 
+  gather(key = year, value = pc_TB, -Region) 
+pc_TB[["year"]] <- as.numeric(pc_TB$year)
+pc_TB[["pc_TB"]] <- as.numeric(pc_TB$pc_TB)
+
+# Extract vector for country-level
+kyz_pc_TB <- pc_TB %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_TB <- pc_TB %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_beds <- pc_beds %>% 
+  gather(key = year, value = pc_beds, -Region) 
+pc_beds[["year"]] <- as.numeric(pc_beds$year)
+pc_beds[["pc_beds"]] <- as.numeric(pc_beds$pc_beds)
+
+# Extract vector for country-level
+kyz_pc_beds <- pc_beds %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_beds <- pc_beds %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_cancer <- pc_cancer %>% 
+  gather(key = year, value = pc_cancer, -Region) 
+pc_cancer[["year"]] <- as.numeric(pc_cancer$year)
+pc_cancer[["pc_cancer"]] <- as.numeric(pc_cancer$pc_cancer)
+
+# Extract vector for country-level
+kyz_pc_cancer <- pc_cancer %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_cancer <- pc_cancer %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_diabetes <- pc_diabetes %>% 
+  gather(key = year, value = pc_diabetes, -Region) 
+pc_diabetes[["year"]] <- as.numeric(pc_diabetes$year)
+pc_diabetes[["pc_diabetes"]] <- as.numeric(pc_diabetes$pc_diabetes)
+
+# Extract vector for country-level
+kyz_pc_diabetes <- pc_diabetes %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_diabetes <- pc_diabetes %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_asthma <- pc_asthma %>% 
+  gather(key = year, value = pc_asthma, -Region) 
+pc_asthma[["year"]] <- as.numeric(pc_asthma$year)
+pc_asthma[["pc_asthma"]] <- as.numeric(pc_asthma$pc_asthma)
+
+# Extract vector for country-level
+kyz_pc_asthma <- pc_asthma %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_asthma <- pc_asthma %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_injury <- pc_injury %>% 
+  gather(key = year, value = pc_injury, -Region) 
+pc_injury[["year"]] <- as.numeric(pc_injury$year)
+pc_injury[["pc_injury"]] <- as.numeric(pc_injury$pc_injury)
+
+# Extract vector for country-level
+kyz_pc_injury <- pc_injury %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_injury <- pc_injury %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_genitourinary <- pc_genitourinary %>% 
+  gather(key = year, value = pc_genitourinary, -Region) 
+pc_genitourinary[["year"]] <- as.numeric(pc_genitourinary$year)
+pc_genitourinary[["pc_genitourinary"]] <- as.numeric(pc_genitourinary$pc_genitourinary)
+
+# Extract vector for country-level
+kyz_pc_genitourinary <- pc_genitourinary %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_genitourinary <- pc_genitourinary %>%
+  filter(Region != "Kyzylorda region")
+
+
+pc_digestive <- pc_digestive %>% 
+  gather(key = year, value = pc_digestive, -Region) 
+pc_digestive[["year"]] <- as.numeric(pc_digestive$year)
+pc_digestive[["pc_digestive"]] <- as.numeric(pc_digestive$pc_digestive)
+
+# Extract vector for country-level
+kyz_pc_digestive <- pc_digestive %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pc_digestive <- pc_digestive %>%
+  filter(Region != "Kyzylorda region")
+
+
+length_of_stay <- length_of_stay %>% 
+  gather(key = year, value = LOS, -Region) 
+length_of_stay[["year"]] <- as.numeric(length_of_stay$year)
+length_of_stay[["LOS"]] <- as.numeric(length_of_stay$LOS)
+
+# Extract vector for country-level
+kyz_length_of_stay <- length_of_stay %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+length_of_stay <- length_of_stay %>%
+  filter(Region != "Kyzylorda region")
+
+
+pop_all <- pop_all %>% 
+  gather(key = year, value = pop, -Region) 
+pop_all[["year"]] <- as.numeric(pop_all$year)
+pop_all[["pop"]] <- as.numeric(pop_all$pop)
+
+# Extract vector for country-level
+kyz_pop_all <- pop_all %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pop_all <- pop_all %>%
+  filter(Region != "Kyzylorda region")
+
+
+pop_male <- pop_male %>% 
+  gather(key = year, value = pop_m, -Region) 
+pop_male[["year"]] <- as.numeric(pop_male$year)
+pop_male[["pop_m"]] <- as.numeric(pop_male$pop_m)
+
+# Extract vector for country-level
+kyz_pop_male <- pop_male %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pop_male <- pop_male %>%
+  filter(Region != "Kyzylorda region")
+
+
+pop_female <- pop_female %>% 
+  gather(key = year, value = pop_f, -Region) 
+pop_female[["year"]] <- as.numeric(pop_female$year)
+pop_female[["pop_f"]] <- as.numeric(pop_female$pop_f)
+
+# Extract vector for country-level
+kyz_pop_female <- pop_female %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+pop_female <- pop_female %>%
+  filter(Region != "Kyzylorda region")
+
+
+births <- births %>% 
+  gather(key = year, value = births_count, -Region) 
+births[["year"]] <- as.numeric(births$year)
+births[["births_count"]] <- as.numeric(births$births_count)
+
+# Extract vector for country-level
+kyz_births <- births %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+births <- births %>%
+  filter(Region != "Kyzylorda region")
+
+
+hosp <- hosp %>% 
+  gather(key = year, value = hosp_count, -Region) 
+hosp[["year"]] <- as.numeric(hosp$year)
+hosp[["hosp_count"]] <- as.numeric(hosp$hosp_count)
+
+# Extract vector for country-level
+kyz_hosp <- hosp %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+hosp <- hosp %>%
+  filter(Region != "Kyzylorda region")
+
+
+
+urban_percent <- urban_percent %>% 
+  gather(key = year, value = urban_percent, -Region) 
+urban_percent[["year"]] <- as.numeric(urban_percent$year)
+urban_percent[["urban_percent"]] <- as.numeric(urban_percent$urban_percent)
+
+# Extract vector for country-level
+kyz_urban_percent <- urban_percent %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+urban_percent <- urban_percent %>%
+  filter(Region != "Kyzylorda region")
+
+
+IMR <- IMR %>% 
+  gather(key = year, value = IMR_all, -Region) 
+IMR[["year"]] <- as.numeric(IMR$year)
+IMR[["IMR_all"]] <- as.numeric(IMR$IMR_all)
+
+# Extract vector for country-level
+kyz_IMR <- IMR %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+IMR <- IMR %>%
+  filter(Region != "Kyzylorda region")
+
+
+doctors_per_capita <- doctors_per_capita %>% 
+  gather(key = year, value = doctors_per_capita, -Region) 
+doctors_per_capita[["year"]] <- as.numeric(doctors_per_capita$year)
+doctors_per_capita[["doctors_per_capita"]] <- as.numeric(doctors_per_capita$doctors_per_capita)
+
+# Extract vector for country-level
+kyz_doctors_per_capita <- doctors_per_capita %>%
+  filter(Region == "Kyzylorda region")
+
+# Remove country-level data for further analysis
+doctors_per_capita <- doctors_per_capita %>%
+  filter(Region != "Kyzylorda region")
+```
+
+
+
+```{r}
+kyzylorda_data <- births %>%
+  merge(doctors_per_capita, by = c("Region", "year"), all = TRUE) %>%
+  merge(hosp, by = c("Region", "year"), all = TRUE) %>%
+  merge(IMR, by = c("Region", "year"), all = TRUE) %>%
+  merge(length_of_stay, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_beds, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_cancer, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_diabetes, by = c("Region", "year"), all = TRUE) %>%
+  merge(pop_all, by = c("Region", "year"), all = TRUE) %>%
+  merge(pop_male, by = c("Region", "year"), all = TRUE) %>%
+  merge(pop_female, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_digestive, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_genitourinary, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_injury, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_asthma, by = c("Region", "year"), all = TRUE) %>%
+  merge(pc_TB, by = c("Region", "year"), all = TRUE) %>%
+  merge(urban_percent, by = c("Region", "year"), all = TRUE) %>%
+  filter(Region != "Arys city") %>%
+  mutate(pc_hosp = (1000 * hosp_count / pop))
+
+
+reg_kyzylorda_data <- kyz_births %>%
+  merge(kyz_doctors_per_capita, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_hosp, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_IMR, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_length_of_stay, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_beds, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_cancer, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_diabetes, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pop_all, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pop_male, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pop_female, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_digestive, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_genitourinary, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_injury, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_asthma, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_pc_TB, by = c("Region", "year"), all = TRUE) %>%
+  merge(kyz_urban_percent, by = c("Region", "year"), all = TRUE) %>%
+  filter(Region != "Arys city") %>%
+  mutate(pc_hosp = (1000 * hosp_count / pop))
+
+
+
+## convert all per capitas to per 1k people, and make sure that prevalance/incidence matches with uzbekistan data
+
+kyzylorda_data <- kyzylorda_data %>%
+  mutate(doctors_per_capita = (1/10) * doctors_per_capita) %>% # doctors per 10k
+  mutate(pc_cancer = (1/100) * pc_cancer) %>% # cancer per 100k (prevalence, matches)
+  mutate(pc_diabetes = (1/100) * pc_diabetes) %>% # diabetes per 100k (incidence, matches, but kazakhstan is "diabetes mellitus")
+  mutate(pc_TB = (1/100) * pc_TB) %>% # TB per 100k (incidence, matches) 
+  mutate(pc_asthma = (1/100) * pc_asthma) %>% # asthma per 100k (we don't have general respiratory diseases data)
+  mutate(pc_injury = (1/100) * pc_injury) %>% # injury per 100k (incidence, matches)
+  mutate(pc_digestive = (1/100) * pc_digestive) %>% # digestive per 100k (incidence, matches)
+  mutate(pc_genitourinary = (1/100) * pc_genitourinary) %>% # geni per 100k (incidence, matches)
+  mutate(pc_beds = (1/10) * pc_beds) # beds per 10k
+
+# calculated hosp by 1k
+# infant mortality per 1k 
+
+
+```
+
+
+
+
+```{r export}
+write.csv(kyzylorda_data, "/Users/michelle/uzbek-healthcare/data//kyzylorda_data_tidy.csv", row.names=FALSE)
+
+write.csv(reg_kyzylorda_data, "/Users/michelle/uzbek-healthcare/data//regional_kyzylorda_data_tidy.csv", row.names=FALSE)
+
+```

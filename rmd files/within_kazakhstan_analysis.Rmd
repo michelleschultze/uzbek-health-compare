@@ -1,0 +1,276 @@
+---
+title: 'Uzbekistan Health Reforms: Within Kazakhstan Analysis'
+author: "Michelle Schultze"
+date: "2023-02-25"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
+#install.packages("readxl", repos = "http://cran.us.r-project.org")
+#install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+#install.packages("broom", repos = "http://cran.us.r-project.org")
+#install.packages("tidymodels", repos = "http://cran.us.r-project.org")
+#install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+#install.packages("pls", repos = "http://cran.us.r-project.org")
+#install.packages("haven", repos = "http://cran.us.r-project.org")
+#install.packages("maps", repos = "http://cran.us.r-project.org")
+#install.packages("rgdal", repos = "http://cran.us.r-project.org")
+#install.packages("maptools", repos = "http://cran.us.r-project.org")
+#install.packages("sf", repos = "http://cran.us.r-project.org")
+#install.packages("terra", repos = "http://cran.us.r-project.org")
+#install.packages("plm", repos = "http://cran.us.r-project.org")
+#install.packages("AER", repos = "http://cran.us.r-project.org")
+#install.packages("stargazer", repos = "http://cran.us.r-project.org")
+#install.packages("ISLR2", repos = "http://cran.us.r-project.org")
+#install.packages("leaps", repos = "http://cran.us.r-project.org")
+#install.packages("glmnet", repos = "http://cran.us.r-project.org")
+#install.packages("tmap", repos = "http://cran.us.r-project.org")
+#tinytex::install_tinytex()
+
+library(readxl)
+library(tidyverse)
+library(broom)
+library(tidymodels)
+library(ggplot2)
+library(pls)
+library(haven)
+library(maps)
+library(rgdal)
+library(maptools)
+library(sf)
+library(terra)
+library(plm)
+library(AER)
+library(stargazer)
+library(ISLR2)
+library(leaps)
+library(glmnet)
+library(tmap)
+library(tinytex)
+library(dplyr)
+library(mapproj)
+
+turk_data <- read_csv("/Users/michelle/uzbek-healthcare/data/turkistan_data_tidy.csv")
+reg_turk_data <- read_csv("/Users/michelle/uzbek-healthcare/data/regional_turkistan_data_tidy.csv")
+kyz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/kyzylorda_data_tidy.csv")
+reg_kyz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/regional_kyzylorda_data_tidy.csv")
+
+theme_bw()
+
+map_kz <- readOGR( 
+  dsn= paste0("/Users/michelle/uzbek-healthcare/data/kazakhstan_map") , 
+  layer="gadm41_KAZ_2",
+  verbose=FALSE)
+```
+
+*OUR REGIONS OF INTEREST: BORDER WITH UZBEKISTAN*
+
+```{r regions-map}
+map_kz@data  <- map_kz@data %>%
+  mutate(color = if_else(NAME_1 %in% c("South Kazakhstan","Qyzylorda"), "lightblue", "white"))
+plot(map_kz, col = map_kz@data$color, main = "Border regions with Uzbekistan")
+```
+
+```{r zoom-in}
+zoomed_map <- map_kz[map_kz$NAME_1 %in% c('Qyzylorda','South Kazakhstan'), ]
+
+zoomed_map@data  <- zoomed_map@data %>%
+  mutate(color = if_else(NAME_1 %in% "South Kazakhstan", "lightblue", "lightcoral"))
+
+plot(zoomed_map, col = zoomed_map@data$color, main = "Kyzylorda and Turkistan")
+```
+
+```{r fix-names}
+zoomed_map@data$NAME_2
+zoomed_map@data$NAME_2 <- c("Aral", "Karmakshy", "Kazaly", "Kyzylorda city", "Shieli",  "Syrdariya", "Zhalagash", "Zhanakorgan", "Arys", "Baydibek", "Shardara", "Kazygurt", "Maktaaral", "Ordabasy", "Otyrar", "Saryagash", "Sayram", "Shymkent city", "Sozak", "Tole Bi", "Turkistan city", "Tulkibas")
+
+# map automatically excludes Kentau city, which is not represented in the map data
+
+comparisons <- turk_data %>%
+  merge(kyz_data, by = c("Region", "year", "births_count", "doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_TB", "pop", "pop_m", "pop_f", "urban_percent", "hosp_count", "pc_hosp"), all = TRUE)
+```
+
+```{r doc-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(doctors_per_capita == as.numeric(doctors_per_capita)) %>%
+  select(doctors_per_capita)
+
+zoomed_map@data$doctors_per_capita <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Blues") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$doctors_per_capita, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Doctors per Capita, 2017")
+```
+
+
+```{r urban-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(urban_percent == as.numeric(urban_percent)) %>%
+  select(urban_percent)
+
+zoomed_map@data$urban_percent <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Oranges") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$urban_percent, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Urban Percentage of Population, 2017")
+```
+
+
+```{r IMR-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(IMR_all == as.numeric(IMR_all)) %>%
+  select(IMR_all)
+
+zoomed_map@data$IMR_all <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Oranges") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$IMR_all, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Infant Mortality Rate, 2017")
+```
+
+```{r TB-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_TB == as.numeric(pc_TB)) %>%
+  select(pc_TB)
+
+zoomed_map@data$pc_TB <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Greens") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$pc_TB, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Tuberculosis, 2017")
+```
+
+```{r cancer-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_cancer == as.numeric(pc_cancer)) %>%
+  select(pc_cancer)
+
+zoomed_map@data$pc_cancer <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Purples") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$pc_cancer, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Cancer Prevalence, 2017")
+```
+
+```{r hosp-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_hosp == as.numeric(pc_hosp)) %>%
+  select(pc_hosp)
+
+zoomed_map@data$pc_hosp <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Purples") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$pc_hosp, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Hospitals per capita, 2017")
+```
+
+```{r beds-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pc_beds == as.numeric(pc_beds)) %>%
+  select(pc_beds)
+
+zoomed_map@data$pc_beds <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Reds") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$pc_beds, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Hospital beds per capita, 2017")
+```
+
+```{r LOS-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(LOS == as.numeric(LOS)) %>%
+  select(LOS)
+
+zoomed_map@data$LOS <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Blues") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$LOS, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Average Length of Hospital Stay, 2017")
+```
+
+```{r pop-maps}
+test <- data.frame(zoomed_map@data$NAME_2)
+test <- test %>%
+  mutate(Region = zoomed_map.data.NAME_2) %>% 
+  merge(filter(comparisons, year == 2017, Region != "Kentau city"), by = "Region", all = TRUE, sort = FALSE) %>%
+  mutate(pop == as.numeric(pop)) %>%
+  select(pop)
+
+zoomed_map@data$pop <- as.numeric(unlist(test))
+
+library(RColorBrewer)
+my_colors <- brewer.pal(9, "Greens") 
+my_colors <- colorRampPalette(my_colors)(30)
+
+class_of_country <- cut(test$pop, 30)
+my_colors <- my_colors[as.numeric(class_of_country)]
+
+plot(zoomed_map , col=my_colors, main = "Population, 2017")
+```

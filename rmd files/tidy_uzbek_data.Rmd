@@ -67,6 +67,10 @@ births <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx
                          sheet = "live-births")
 pop_urbanrural <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
                          sheet = "pop-urbanrural")
+intestinal <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "intestinal")
+hep <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "hep")
 
 ## TBA: condensing this so that folks at home don't have to change the path 
 ```
@@ -536,6 +540,52 @@ pop_urbanrural[["pop_count"]] <- as.numeric(pop_urbanrural$pop_count)
 
 
 
+intestinal <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "intestinal")
+hep <- read_excel("/Users/michelle/uzbek-healthcare/data/uzbekistan_data.xlsx", 
+                         sheet = "hep")
+
+
+
+
+
+intestinal <- intestinal %>% 
+  gather(key = year, value = intestinal_count, -Region) 
+intestinal[["year"]] <- as.numeric(intestinal$year)
+intestinal[["intestinal_count"]] <- as.numeric(intestinal$intestinal_count)
+
+# Extract vector for country-level
+uz_intestinal <- intestinal %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+intestinal <- intestinal %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
+
+
+
+hep <- hep %>% 
+  gather(key = year, value = hep_count, -Region) 
+hep[["year"]] <- as.numeric(hep$year)
+hep[["hep_count"]] <- as.numeric(hep$hep_count)
+
+# Extract vector for country-level
+uz_hep <- hep %>%
+  filter(Region == "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region != "" ~ "Uzbekistan (National Level)"))
+
+# Remove country-level data for further analysis
+hep <- hep %>%
+  filter(Region != "Republic of Uzbekistan, total population") %>%
+  mutate(Region = case_when(Region == "Republic of Karakalpakstan" ~ "Karakalpakstan", Region != "Republic of Karakalpakstan" ~ Region))
+
+
+
 
 ```
 
@@ -551,7 +601,9 @@ diseases <- diabetes %>%
   merge(injury, by = c("Region", "year"), all = TRUE) %>%
   merge(preg_compl, by = c("Region", "year"), all = TRUE) %>%
   merge(respiratory, by = c("Region", "year"), all = TRUE) %>%
-  merge(skin, by = c("Region", "year"), all = TRUE)
+  merge(skin, by = c("Region", "year"), all = TRUE) %>%
+  merge(hep, by = c("Region", "year"), all = TRUE) %>%
+  merge(intestinal, by = c("Region", "year"), all = TRUE)
 ```
 
 
@@ -590,16 +642,21 @@ uzbek_data <- uzbek_data %>%
 # Per capitas (infant mortality is currently a count and must be converted to rate with live birth data)
 uzbek_data <- uzbek_data %>%
   mutate(pc_beds = 1000 * beds_count / pop) %>%
-  mutate(pc_cancer = 1000 * cancer_count / pop) %>%
+  mutate(pc_cancer = cancer_count / pop) %>%
   mutate(pc_circulatory = 1000 * circulatory_count / pop) %>%
-  mutate(pc_diabetes = 1000 * diabetes_count / pop) %>%
+  mutate(pc_diabetes = diabetes_count / pop) %>%
   mutate(pc_digestive = 1000 * digestive_count / pop) %>%
+  mutate(pc_hep = hep_count / pop) %>%
+  mutate(pc_intestinal = intestinal_count / pop) %>%
+  mutate(pc_respiratory = 1000 * respiratory_count / pop) %>%
+  mutate(pc_genitourinary = 1000 * genitourinary_count / pop) %>%
   mutate(pc_TB = tuberculosis / pop) %>%
   mutate(pc_injury = 1000 * injury_count / pop) %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
   mutate(male_percent = pop_m / pop) %>%
   mutate(IMR_all = 1000 * infant_mortality_count_all / births_count) %>%
-  mutate(urban_percent = pop_urban / pop)
+  mutate(urban_percent = pop_urban / pop) %>%
+  mutate(doctors_per_capita = doctors_per_capita / 10) 
 
 
 
@@ -619,7 +676,9 @@ nat_diseases <- uz_diabetes %>%
   merge(uz_injury, by = c("Region", "year"), all = TRUE) %>%
   merge(uz_preg_compl, by = c("Region", "year"), all = TRUE) %>%
   merge(uz_respiratory, by = c("Region", "year"), all = TRUE) %>%
-  merge(uz_skin, by = c("Region", "year"), all = TRUE) 
+  merge(uz_skin, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_hep, by = c("Region", "year"), all = TRUE) %>%
+  merge(uz_intestinal, by = c("Region", "year"), all = TRUE) 
 
 #national population dataframe
 
@@ -668,17 +727,22 @@ nat_uzbek_data <- nat_diseases %>%
 # Per capitas (population & indicator counts already in thousands, convert to per 1k people)
 nat_uzbek_data <- nat_uzbek_data %>%
   mutate(pc_beds = 1000 * beds_count / pop) %>%
-  mutate(pc_cancer = 1000 * cancer_count / pop) %>%
+  mutate(pc_cancer = cancer_count / pop) %>%
   mutate(pc_circulatory = 1000 * circulatory_count / pop) %>%
-  mutate(pc_diabetes = 1000 * diabetes_count / pop) %>%
+  mutate(pc_diabetes = diabetes_count / pop) %>%
   mutate(pc_digestive = 1000 * digestive_count / pop) %>%
   mutate(pc_TB = tuberculosis / pop) %>%
+  mutate(pc_respiratory = 1000 * respiratory_count / pop) %>%
+  mutate(pc_genitourinary = 1000 * genitourinary_count / pop) %>%
   mutate(pc_injury = 1000 * injury_count / pop) %>%
   mutate(pc_hosp = 1000 * hosp_count / pop) %>%
+  mutate(pc_hep = hosp_count / pop) %>%
+  mutate(pc_intestinal = hosp_count / pop) %>%
   mutate(male_percent = pop_m / pop) %>%
   mutate(IMR_all = 1000 * infant_mortality_count_all / births_count) %>%
   mutate(IMR_rural = 1000 * infant_mortality_count_rural / births_count) %>%
-  mutate(IMR_urban = 1000 * infant_mortality_count_urban / births_count)
+  mutate(IMR_urban = 1000 * infant_mortality_count_urban / births_count) %>%
+  mutate(doctors_per_capita = doctors_per_capita / 10) 
 
 
 

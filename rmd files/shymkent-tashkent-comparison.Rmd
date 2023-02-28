@@ -1,0 +1,420 @@
+---
+title: 'Uzbekistan Health Reforms: Shymkent/Tashkent Comparison'
+author: "Michelle Schultze"
+date: "2023-02-23"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r library-data, message=FALSE, warning=FALSE, include=FALSE}
+library(readxl)
+library(tidyverse)
+library(broom)
+library(tidymodels)
+library(ggplot2)
+library(pls)
+library(haven)
+library(maps)
+library(rgdal)
+library(maptools)
+library(sf)
+library(terra)
+library(plm)
+library(AER)
+library(stargazer)
+library(ISLR2)
+library(leaps)
+library(glmnet)
+library(tmap)
+library(tinytex)
+
+uz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/uzbekistan_data_tidy.csv")
+turk_data <- read_csv("/Users/michelle/uzbek-healthcare/data/turkistan_data_tidy.csv")
+
+shymkent <- turk_data %>%
+  filter(Region == "Shymkent city")
+tashkent <- uz_data %>%
+  filter(Region == "Tashkent city")
+comparisons <- shymkent %>%
+  merge(tashkent, by = c("Region", "year", "births_count", "doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_respiratory", "pc_TB", "pop", "pop_m", "pop_f", "urban_percent", "hosp_count", "pc_hosp"), all = TRUE)
+```
+
+# DISEASES #
+
+## TB ##
+
+```{r TB-lines}
+ggplot(comparisons, aes(x = year, y = pc_TB)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Tuberculosis incidence per capita")
+
+ggplot(comparisons, aes(x = year, y = pc_TB)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Tuberculosis incidence per capita")
+```
+
+```{r TB-regs}
+TBmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_TB ~ year + Region, data = comparisons)
+tidy(TBmodel)
+glance(TBmodel)$p.value < 0.01 #significant with and without regional effects
+```
+
+## Cancer ##
+
+```{r cancer-lines}
+ggplot(comparisons, aes(x = year, y = pc_cancer)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Cancer prevalence per capita",
+       subtitle = "not so sure about this one")
+
+ggplot(comparisons, aes(x = year, y = pc_cancer)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Cancer prevalence per capita")
+```
+
+```{r cancer-regs}
+cancermodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_cancer ~ year + Region, data = comparisons)
+tidy(cancermodel)
+glance(cancermodel)$p.value < 0.01 #significant with fixed effects
+```
+
+## Respiratory diseases ##
+
+```{r resp-lines}
+ggplot(filter(comparisons, pc_respiratory >100), aes(x = year, y = pc_respiratory)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Respiratory disease incidence per capita",
+       subtitle = "Excluding low outlier")
+
+ggplot(filter(comparisons, pc_respiratory >100), aes(x = year, y = pc_respiratory)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Respiratory disease incidence per capita",
+       subtitle = "Excluding low outlier")
+```
+
+```{r resp-regs}
+respmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_respiratory ~ year + Region, data = filter(comparisons, pc_respiratory >100))
+tidy(respmodel)
+glance(respmodel)$p.value < 0.01 #not significant
+```
+
+## Digestive diseases ##
+
+```{r digestive-lines}
+ggplot(comparisons, aes(x = year, y = pc_digestive)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Digestive disease incidence per capita")
+
+ggplot(comparisons, aes(x = year, y = pc_digestive)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Digestive disease incidence per capita")
+```
+
+```{r digestive-regs}
+digmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_digestive ~ year + Region, data = comparisons)
+tidy(digmodel)
+glance(digmodel)$p.value < 0.01 #significant with and without fixed effects
+```
+
+## Diabetes ##
+
+```{r diabetes-lines}
+ggplot(comparisons, aes(x = year, y = pc_diabetes)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Diabetes incidence per capita",
+       subtitle = "oh no")
+
+ggplot(filter(comparisons, pc_diabetes < 5), aes(x = year, y = pc_diabetes)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Diabetes incidence per capita",
+       subtitle = "Excluding years with error or changed counting practices")
+
+ggplot(filter(comparisons, pc_diabetes < 5), aes(x = year, y = pc_diabetes)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Diabetes incidence per capita")
+```
+
+```{r diabetes-regs}
+diabetesmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_digestive ~ year + Region, data = filter(comparisons, pc_diabetes < 5))
+tidy(diabetesmodel)
+glance(diabetesmodel)$p.value < 0.01 #significant with and 
+#without fixed effects, when filtering out measurement error
+```
+
+## Injury / poisoning ##
+
+```{r inj-lines}
+ggplot(comparisons, aes(x = year, y = pc_injury)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Injury/poisoning incidence per capita")
+
+ggplot(comparisons, aes(x = year, y = pc_injury)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Injury/poisoning incidence per capita")
+```
+
+```{r inj-regs}
+injmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_injury ~ year + Region, data = comparisons)
+tidy(injmodel)
+glance(injmodel)$p.value < 0.01 #regional effects not significant, at least for Tashkent city?
+```
+
+## Genitourinary diseases ##
+
+```{r geni-lines}
+ggplot(comparisons, aes(x = year, y = pc_genitourinary)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Genitourinary diseases incidence per capita")
+
+ggplot(filter(comparisons, year < 2020), aes(x = year, y = pc_genitourinary)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Genitourinary diseases incidence per capita",
+       subtitle = "excluding 2020 outlier")
+
+ggplot(filter(comparisons, year < 2020), aes(x = year, y = pc_genitourinary)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Genitourinary diseases incidence per capita",
+       subtitle = "excluding 2020 outlier")
+```
+
+```{r geni-regs}
+genimodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_genitourinary ~ year + Region, data = filter(comparisons, year < 2020))
+tidy(genimodel)
+glance(genimodel)$p.value < 0.01 #regional effects significant
+```
+
+
+# HEALTHCARE STRUCTURE #
+
+## Doctors per Capita ##
+
+```{r doctors-lines}
+ggplot(comparisons, aes(x = year, y = doctors_per_capita)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Doctors per capita")
+
+# not sure what's due to error. I will filter out all points 
+#between 4.5-7.5 because I believe these may be due to changes in 
+#measurement practice or data collection error.
+
+comparisons %>%
+  filter(doctors_per_capita <= 4.5 | doctors_per_capita >= 7.5) %>%
+ggplot(aes(x = year, y = doctors_per_capita)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Doctors per capita", subtitle = "filtering out potential measurement error or changes in measurement practice")
+
+comparisons %>%
+  filter(doctors_per_capita <= 4.5 | doctors_per_capita >= 7.5) %>%
+ggplot(aes(x = year, y = doctors_per_capita)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Doctors per capita", subtitle = "filtering out potential changes in measurement practice or error")
+```
+
+```{r doctors-regs}
+doctorsmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(doctors_per_capita ~ year + Region, data = filter(comparisons, doctors_per_capita <= 4.5 | doctors_per_capita >= 7.5))
+tidy(doctorsmodel)
+glance(doctorsmodel)$p.value < 0.01 #regional effects significant, when filtering out error
+```
+
+
+## Average Length of Stay ##
+
+```{r LOS-lines}
+ggplot(comparisons, aes(x = year, y = LOS)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Average Length of Stay")
+
+ggplot(comparisons, aes(x = year, y = LOS)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Average Length of Stay")
+```
+
+```{r LOS-regs}
+LOSmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(LOS ~ year + Region, data = comparisons)
+tidy(LOSmodel)
+glance(LOSmodel)$p.value < 0.01 #regional effects not significant but this makes no sense
+```
+
+## Hospital beds per capita ##
+
+```{r beds-lines}
+ggplot(comparisons, aes(x = year, y = pc_beds)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Hospital beds per capita")
+
+ggplot(comparisons, aes(x = year, y = pc_beds)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Hospital beds per capita")
+```
+
+```{r bed-regs}
+bedmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_beds ~ year + Region, data = comparisons)
+tidy(bedmodel)
+glance(bedmodel)$p.value < 0.01 #regional effects significant
+```
+
+## Hospitals per capita ## 
+
+```{r hosp-lines}
+ggplot(comparisons, aes(x = year, y = pc_hosp)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Hospitals per capita")
+
+ggplot(comparisons, aes(x = year, y = pc_hosp)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Hospitals per capita")
+```
+
+```{r hosp-regs}
+hospmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pc_hosp ~ year + Region, data = comparisons)
+tidy(hospmodel)
+glance(hospmodel)$p.value < 0.01 #regional effects just barely not significant
+```
+
+
+# Mortality and demography #
+
+## IMR ##
+
+```{r IMR-lines}
+ggplot(comparisons, aes(x = year, y = IMR_all)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Infant Mortality Rate")
+
+ggplot(comparisons, aes(x = year, y = IMR_all)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Infant Mortality Rate")
+```
+
+```{r IMR-regs}
+IMRmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(IMR_all ~ year + Region, data = comparisons)
+tidy(IMRmodel)
+glance(IMRmodel)$p.value < 0.01 #regional effects not significant
+
+IMRmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(IMR_all ~ year, data = comparisons)
+tidy(IMRmodel)
+glance(IMRmodel)$p.value < 0.01 #regular model without regional effects is significant
+```
+
+## Births and Birth Rate ##
+
+```{r births-lines}
+ggplot(comparisons, aes(x = year, y = births_count)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Total births")
+
+ggplot(filter(comparisons, (births_count / pop) <= 40), aes(x = year, y = (births_count / pop))) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Total birth rate (live births per capita)",
+       subtitle = "filtering out probable error")
+
+
+ggplot(comparisons, aes(x = year, y = births_count)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Total births")
+
+ggplot(filter(comparisons, (births_count / pop) <= 40), aes(x = year, y = (births_count / pop))) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Total birth rate (live births per capita)",
+       subtitle = "filtering out probable error")
+```
+
+```{r birth-regs}
+birthmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(births_count ~ year + Region, data = comparisons)
+tidy(birthmodel)
+glance(birthmodel)$p.value < 0.01 #regional effects significant
+
+CBRmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit((births_count / pop) ~ year + Region, data = comparisons)
+tidy(CBRmodel)
+glance(CBRmodel)$p.value < 0.01 #regional effects significant
+```
+
+## Population ## 
+
+```{r pop-lines}
+ggplot(comparisons, aes(x = year, y = pop)) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Total pop")
+
+ggplot(comparisons, aes(x = year, y = (pop_m / pop))) +
+  geom_line(aes(color = Region)) +
+  labs(title = "Male percentage",
+       subtitle = "data inconsistency?")
+
+
+ggplot(comparisons, aes(x = year, y = pop)) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Total pop")
+
+ggplot(comparisons, aes(x = year, y = (pop_m / pop))) +
+  geom_line(aes(color = Region)) +
+  geom_smooth(method = "lm", aes(color = Region)) +
+  labs(title = "Male percentage",
+       subtitle = "data inconsistency?")
+```
+
+```{r pop-regs}
+popmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(pop ~ year + Region, data = comparisons)
+tidy(popmodel)
+glance(popmodel)$p.value < 0.01 #regional effects extremely significant
+
+
+malepercmodel <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit((pop_m / pop) ~ year + Region, data = comparisons)
+tidy(malepercmodel)
+glance(malepercmodel)$p.value < 0.01 #regional effects significant
+```
+
+
+
+
