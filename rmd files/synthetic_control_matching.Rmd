@@ -49,30 +49,31 @@ comparisons <- turk_data %>%
 # Outcome vars will be c("doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_TB", "pop", "hosp_count", "pc_hosp")
 match.out.min <- c("doctors_per_capita", "IMR_all", "LOS", "pc_beds", 
                    "pc_cancer", "pc_diabetes", "pc_digestive", 
-                   "pc_genitourinary", "pc_injury", "pc_TB", "pc_hosp", "pop")
+                   "pc_genitourinary", "pc_injury", "pc_TB", "pc_hosp")
 
 # Because we're not matching exactly, we will use match.out.min/match.out.covar rather than match.out/match.covar
 
-sea1 <- comparisons %>%
+comparisons2 <- comparisons %>%
   select("Region", "year", "Intervention", "doctors_per_capita", "IMR_all", 
          "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", 
          "pc_genitourinary", "pc_injury", "pc_TB", "pop", "hosp_count", 
          "pc_hosp") %>%
   filter(year >= 2002, year <= 2018) %>%
-  drop_na() %>%
-  microsynth(idvar="Region", timevar="year", intvar="Intervention",
-             start.pre=2002, end.pre=NULL, end.post=2018,
-             match.out.min=match.out.min,
-             match.out = FALSE,
-             match.covar.min = FALSE,
+  drop_na()
+
+comparisons2['year'] = comparisons2['year'] - 2001
+
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=4, end.post=17,
+             match.out.min = match.out.min,
              match.covar = FALSE,
-             result.var=match.out.min, omnibus.var=match.out.min,
-             test="lower",
-#             perm=250, jack = TRUE, check.feas=TRUE, use.backup = TRUE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = TRUE, check.feas=TRUE, use.backup = TRUE,
              n.cores = min(parallel::detectCores(), 2))
 summary(sea1)
 
-#plot_microsynth(sea1)
+plot_microsynth(sea1)
 ```
 
 
