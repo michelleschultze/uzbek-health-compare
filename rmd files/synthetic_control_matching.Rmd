@@ -2,54 +2,82 @@
 title: "Uzbekistan Health Reforms: Synthetic Control Model (Uzbekistan)"
 author: Michelle Schultze
 output: pdf_document
-date: "2023-01-20"
+date: "2023-02-27"
 ---
 
-Trying PCR model
-```{r principal components}
-## trying out principal components model
-## https://www.statology.org/principal-components-regression-in-r/ 
-  
+```{r packages}
+install.packages("readr", repos = "http://cran.us.r-project.org")
+install.packages("microsynth", repos = "http://cran.us.r-project.org")
+install.packages("LowRankQP", repos = "http://cran.us.r-project.org")
+install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+library("readr")
+library("tidyverse")
+library("microsynth")
+library("LowRankQP")
+```
 
-set.seed(1)
+```{r dataset}
+#setting intervention year
+int_year = 2005
 
-model <- pcr(LOS ~ pc_beds + pop + pc_hosp + doctors_per_capita + pc_cancer + pc_TB + fert_rate + pc_injury + male_percent + urban_percent + IMR_all, data = uzbek_data, scale=TRUE, validation="CV")
+uzbek_data <- read_csv("/Users/michelle/uzbek-healthcare/data/uzbekistan_data_tidy.csv")
+turk_data <- read_csv("/Users/michelle/uzbek-healthcare/data/turkistan_data_tidy.csv")
+kyz_data <- read_csv("/Users/michelle/uzbek-healthcare/data/kyzylorda_data_tidy.csv")
 
-summary(model)
+uzbek_data <- uzbek_data %>% 
+  mutate(Country = "UZ") %>%
+  mutate(Intervention = if_else(year <= int_year, 0, 1))
+turk_data <- turk_data %>%
+  mutate(Country = "KZ", Intervention = 0) 
+kyz_data <- kyz_data %>%
+  mutate(Country = "KZ", Intervention = 0)
 
-validationplot(model)
-validationplot(model, val.type="MSEP")
-validationplot(model, val.type="R2")
-
-# optimal to use 7 PC because RMSEP increases after 7 components
-
-train <- sample_n(uzbek_data, 150, replace = TRUE) %>%
-  select(c("LOS", "pc_beds", "pop", "pc_hosp", "doctors_per_capita", "pc_cancer", "pc_TB", "fert_rate", "pc_injury" ,"male_percent", "urban_percent", "IMR_all"))
-y_test <- uzbek_data[c("LOS")]
-test <- uzbek_data[c("LOS", "pc_beds", "pop", "pc_hosp", "doctors_per_capita", "pc_cancer", "pc_TB", "fert_rate", "pc_injury" ,"male_percent", "urban_percent", "IMR_all")]
-
-model <- pcr(LOS ~ pc_beds + pop + pc_hosp + doctors_per_capita + pc_cancer + pc_TB + fert_rate + pc_injury + male_percent + urban_percent + IMR_all, data=train, scale=TRUE, validation="CV", ncomp = 2)
-pcr_pred <- predict(model, test, ncomp = 2)
-print(model)
-sqrt(mean(complete.cases((as.numeric(pcr_pred) - as.numeric(unlist(y_test)))^2)))
-
-
-## i'll figure this out later
-
-
-
+comparisons <- turk_data %>%
+  merge(kyz_data, by = c("Region", "year", "births_count", "doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_TB", "pop", "pop_m", "pop_f", "urban_percent", "hosp_count", "pc_hosp", "Country", "Intervention"), all = TRUE) %>%
+  merge(uzbek_data, by = c("Region", "year", "births_count", "doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_TB", "pop", "pop_m", "pop_f", "urban_percent", "hosp_count", "pc_hosp", "Country", "Intervention"), all = TRUE) %>%
+  select(c("Region", "year", "births_count", "doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_TB", "pop", "pop_m", "pop_f", "urban_percent", "hosp_count", "pc_hosp", "Country", "Intervention"))
 
 ```
 
+```{r synthetic-control}
+# ID will be "Region" column
+# Time will be "year" column
+# Intervention variable created above
+# Intervention year set above
+# Data starts 2002, ends 2018 (constricted by KZ data availability)
 
-```{r}
-LOS_index <- linear_reg() %>%
-  set_engine("lm") %>%
-  fit(LOS ~ pc_beds + pop + pc_hosp + doctors_per_capita + pc_cancer + pc_TB + fert_rate + pc_injury + male_percent + urban_percent + IMR_all, data = uz_data)
-LOS_index <- tidy(LOS_index)
-glance(LOS_index)$p.value < 0.01
+# Outcome vars will be c("doctors_per_capita", "IMR_all", "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", "pc_genitourinary", "pc_injury", "pc_TB", "pop", "hosp_count", "pc_hosp")
+match.out.min <- c("doctors_per_capita", "IMR_all", "LOS", "pc_beds", 
+                   "pc_cancer", "pc_diabetes", "pc_digestive", 
+                   "pc_genitourinary", "pc_injury", "pc_TB", "pc_hosp", "pop")
 
-data.frame(LOS_index$term, LOS_index$estimate)
+# Because we're not matching exactly, we will use match.out.min/match.out.covar rather than match.out/match.covar
 
+sea1 <- comparisons %>%
+  select("Region", "year", "Intervention", "doctors_per_capita", "IMR_all", 
+         "LOS", "pc_beds", "pc_cancer", "pc_diabetes", "pc_digestive", 
+         "pc_genitourinary", "pc_injury", "pc_TB", "pop", "hosp_count", 
+         "pc_hosp") %>%
+  filter(year >= 2002, year <= 2018) %>%
+  drop_na() %>%
+  microsynth(idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=2002, end.pre=NULL, end.post=2018,
+             match.out.min=match.out.min,
+             match.out = FALSE,
+             match.covar.min = FALSE,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=match.out.min,
+             test="lower",
+#             perm=250, jack = TRUE, check.feas=TRUE, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+#plot_microsynth(sea1)
 ```
+
+
+
+
+
+
 

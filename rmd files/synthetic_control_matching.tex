@@ -1,0 +1,521 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Uzbekistan Health Reforms: Synthetic Control Model (Uzbekistan)},
+  pdfauthor={Michelle Schultze},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Uzbekistan Health Reforms: Synthetic Control Model (Uzbekistan)}
+\author{Michelle Schultze}
+\date{2023-02-27}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{install.packages}\NormalTok{(}\StringTok{"readr"}\NormalTok{, }\AttributeTok{repos =} \StringTok{"http://cran.us.r{-}project.org"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Installing package into '/Users/michelle/Library/R/arm64/4.2/library'
+## (as 'lib' is unspecified)
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## The downloaded binary packages are in
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{install.packages}\NormalTok{(}\StringTok{"microsynth"}\NormalTok{, }\AttributeTok{repos =} \StringTok{"http://cran.us.r{-}project.org"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Installing package into '/Users/michelle/Library/R/arm64/4.2/library'
+## (as 'lib' is unspecified)
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## The downloaded binary packages are in
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{install.packages}\NormalTok{(}\StringTok{"LowRankQP"}\NormalTok{, }\AttributeTok{repos =} \StringTok{"http://cran.us.r{-}project.org"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Installing package into '/Users/michelle/Library/R/arm64/4.2/library'
+## (as 'lib' is unspecified)
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## The downloaded binary packages are in
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{install.packages}\NormalTok{(}\StringTok{"tidyverse"}\NormalTok{, }\AttributeTok{repos =} \StringTok{"http://cran.us.r{-}project.org"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Installing package into '/Users/michelle/Library/R/arm64/4.2/library'
+## (as 'lib' is unspecified)
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## The downloaded binary packages are in
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(}\StringTok{"readr"}\NormalTok{)}
+\FunctionTok{library}\NormalTok{(}\StringTok{"tidyverse"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## -- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
+## v dplyr     1.1.0     v purrr     1.0.1
+## v forcats   1.0.0     v stringr   1.5.0
+## v ggplot2   3.4.1     v tibble    3.1.8
+## v lubridate 1.9.2     v tidyr     1.3.0
+\end{verbatim}
+
+\begin{verbatim}
+## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+## i Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(}\StringTok{"microsynth"}\NormalTok{)}
+\FunctionTok{library}\NormalTok{(}\StringTok{"LowRankQP"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## LowRankQP 1.0 loaded
+## Copyright J.T. Ormerod & M. P. Wand 2020
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#setting intervention year}
+\NormalTok{int\_year }\OtherTok{=} \DecValTok{2005}
+
+\NormalTok{uzbek\_data }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"/Users/michelle/uzbek{-}healthcare/data/uzbekistan\_data\_tidy.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Rows: 462 Columns: 48
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr  (1): Region
+## dbl (47): year, diabetes_count, blood_disease_count, cancer_count, circulato...
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{turk\_data }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"/Users/michelle/uzbek{-}healthcare/data/turkistan\_data\_tidy.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Rows: 285 Columns: 20
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr  (1): Region
+## dbl (19): year, births_count, doctors_per_capita, hosp_count, IMR_all, LOS, ...
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{kyz\_data }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"/Users/michelle/uzbek{-}healthcare/data/kyzylorda\_data\_tidy.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Rows: 152 Columns: 20
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr  (1): Region
+## dbl (19): year, births_count, doctors_per_capita, hosp_count, IMR_all, LOS, ...
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{uzbek\_data }\OtherTok{\textless{}{-}}\NormalTok{ uzbek\_data }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Country =} \StringTok{"UZ"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Intervention =} \FunctionTok{if\_else}\NormalTok{(year }\SpecialCharTok{\textless{}=}\NormalTok{ int\_year, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\NormalTok{turk\_data }\OtherTok{\textless{}{-}}\NormalTok{ turk\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Country =} \StringTok{"KZ"}\NormalTok{, }\AttributeTok{Intervention =} \DecValTok{0}\NormalTok{) }
+\NormalTok{kyz\_data }\OtherTok{\textless{}{-}}\NormalTok{ kyz\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Country =} \StringTok{"KZ"}\NormalTok{, }\AttributeTok{Intervention =} \DecValTok{0}\NormalTok{)}
+
+\NormalTok{comparisons }\OtherTok{\textless{}{-}}\NormalTok{ turk\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{merge}\NormalTok{(kyz\_data, }\AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"Region"}\NormalTok{, }\StringTok{"year"}\NormalTok{, }\StringTok{"births\_count"}\NormalTok{, }\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }\StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }\StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }\StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"pop\_m"}\NormalTok{, }\StringTok{"pop\_f"}\NormalTok{, }\StringTok{"urban\_percent"}\NormalTok{, }\StringTok{"hosp\_count"}\NormalTok{, }\StringTok{"pc\_hosp"}\NormalTok{, }\StringTok{"Country"}\NormalTok{, }\StringTok{"Intervention"}\NormalTok{), }\AttributeTok{all =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{merge}\NormalTok{(uzbek\_data, }\AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"Region"}\NormalTok{, }\StringTok{"year"}\NormalTok{, }\StringTok{"births\_count"}\NormalTok{, }\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }\StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }\StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }\StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"pop\_m"}\NormalTok{, }\StringTok{"pop\_f"}\NormalTok{, }\StringTok{"urban\_percent"}\NormalTok{, }\StringTok{"hosp\_count"}\NormalTok{, }\StringTok{"pc\_hosp"}\NormalTok{, }\StringTok{"Country"}\NormalTok{, }\StringTok{"Intervention"}\NormalTok{), }\AttributeTok{all =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"Region"}\NormalTok{, }\StringTok{"year"}\NormalTok{, }\StringTok{"births\_count"}\NormalTok{, }\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }\StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }\StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }\StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"pop\_m"}\NormalTok{, }\StringTok{"pop\_f"}\NormalTok{, }\StringTok{"urban\_percent"}\NormalTok{, }\StringTok{"hosp\_count"}\NormalTok{, }\StringTok{"pc\_hosp"}\NormalTok{, }\StringTok{"Country"}\NormalTok{, }\StringTok{"Intervention"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# ID will be "Region" column}
+\CommentTok{\# Time will be "year" column}
+\CommentTok{\# Intervention variable created above}
+\CommentTok{\# Intervention year set above}
+\CommentTok{\# Data starts 2002, ends 2018 (constricted by KZ data availability)}
+
+\CommentTok{\# Outcome vars will be c("doctors\_per\_capita", "IMR\_all", "LOS", "pc\_beds", "pc\_cancer", "pc\_diabetes", "pc\_digestive", "pc\_genitourinary", "pc\_injury", "pc\_TB", "pop", "hosp\_count", "pc\_hosp")}
+\NormalTok{match.out.min }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }\StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }
+                   \StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }
+                   \StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pc\_hosp"}\NormalTok{, }\StringTok{"pop"}\NormalTok{)}
+
+\CommentTok{\# Because we\textquotesingle{}re not matching exactly, we will use match.out.min/match.out.covar rather than match.out/match.covar}
+
+\NormalTok{sea1 }\OtherTok{\textless{}{-}}\NormalTok{ comparisons }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(}\StringTok{"Region"}\NormalTok{, }\StringTok{"year"}\NormalTok{, }\StringTok{"Intervention"}\NormalTok{, }\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }
+         \StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }\StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }
+         \StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"hosp\_count"}\NormalTok{, }
+         \StringTok{"pc\_hosp"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(year }\SpecialCharTok{\textgreater{}=} \DecValTok{2002}\NormalTok{, year }\SpecialCharTok{\textless{}=} \DecValTok{2018}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{drop\_na}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{microsynth}\NormalTok{(}\AttributeTok{idvar=}\StringTok{"Region"}\NormalTok{, }\AttributeTok{timevar=}\StringTok{"year"}\NormalTok{, }\AttributeTok{intvar=}\StringTok{"Intervention"}\NormalTok{,}
+             \AttributeTok{start.pre=}\DecValTok{2002}\NormalTok{, }\AttributeTok{end.pre=}\ConstantTok{NULL}\NormalTok{, }\AttributeTok{end.post=}\DecValTok{2018}\NormalTok{,}
+             \AttributeTok{match.out.min=}\NormalTok{match.out.min,}
+             \AttributeTok{match.out =} \ConstantTok{FALSE}\NormalTok{,}
+             \AttributeTok{match.covar.min =} \ConstantTok{FALSE}\NormalTok{,}
+             \AttributeTok{match.covar =} \ConstantTok{FALSE}\NormalTok{,}
+             \AttributeTok{result.var=}\NormalTok{match.out.min, }\AttributeTok{omnibus.var=}\NormalTok{match.out.min,}
+             \AttributeTok{test=}\StringTok{"lower"}\NormalTok{,}
+\CommentTok{\#             perm=250, jack = TRUE, check.feas=TRUE, use.backup = TRUE,}
+             \AttributeTok{n.cores =} \FunctionTok{min}\NormalTok{(parallel}\SpecialCharTok{::}\FunctionTok{detectCores}\NormalTok{(), }\DecValTok{2}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## WARNING: The following variables will be removed from match.covar.min since they are not in the dataset:
+\end{verbatim}
+
+\begin{verbatim}
+## FALSE
+\end{verbatim}
+
+\begin{verbatim}
+## Setting end.pre = 2005.
+\end{verbatim}
+
+\begin{verbatim}
+## WARNING: There is a low number (14) of cases in the treatment or intervention group.
+\end{verbatim}
+
+\begin{verbatim}
+## Setting use.survey = FALSE.
+\end{verbatim}
+
+\begin{verbatim}
+## Be cautious of results involving linearization or confidence intervals.
+\end{verbatim}
+
+\begin{verbatim}
+## Calculating weights...
+\end{verbatim}
+
+\begin{verbatim}
+## Created main weights for synthetic control: Time = 0.01
+\end{verbatim}
+
+\begin{verbatim}
+## Matching summary for main weights:
+\end{verbatim}
+
+\begin{verbatim}
+##                            Targets Final.Weighted.Control All.scaled
+## Intercept                  14.0000                14.0000    14.0000
+## doctors_per_capita.2005    40.2000                44.8000    32.4800
+## doctors_per_capita.2004    41.2800                44.9400    33.3843
+## doctors_per_capita.2003    43.0000                42.5600    33.7930
+## doctors_per_capita.2002    43.6000                41.7200    34.2697
+## IMR_all.2005              208.7267               452.2000   210.1993
+## IMR_all.2004              213.3226               186.2000   226.7329
+## IMR_all.2003              234.9044               194.6000   234.8611
+## IMR_all.2002              232.4318               265.8600   258.7472
+## LOS.2005                  144.1000               119.0000   147.1514
+## LOS.2004                  148.9000               134.4000   151.2757
+## LOS.2003                  156.5000               145.6000   160.3946
+## LOS.2002                  158.1000               149.8000   163.5730
+## pc_beds.2005               76.4580                56.5600    77.2112
+## pc_beds.2004               77.4803                56.0000    77.0077
+## pc_beds.2003               79.8360                56.4200    76.9342
+## pc_beds.2002               80.8869                57.2600    76.7907
+## pc_cancer.2005              9.4131                74.2980    24.3093
+## pc_cancer.2004              9.4961                69.6360    24.7641
+## pc_cancer.2003              9.8117                63.9520    23.0492
+## pc_cancer.2002              9.9387                68.7260    22.3806
+## pc_diabetes.2005            6.0317                16.9540     8.0261
+## pc_diabetes.2004            7.4953                17.1122     8.6317
+## pc_diabetes.2003            5.7686                17.4608     8.4931
+## pc_diabetes.2002            4.7089                17.1318     7.6978
+## pc_digestive.2005         852.8173              1281.8820   781.8698
+## pc_digestive.2004         831.5817              1487.3600   756.4225
+## pc_digestive.2003         788.3256              1267.4620   744.2678
+## pc_digestive.2002         728.4607              1367.1700   791.7635
+## pc_genitourinary.2005     363.2514               790.0900   457.7805
+## pc_genitourinary.2004     368.8663               596.2740   447.1571
+## pc_genitourinary.2003     351.7964               544.3900   459.2724
+## pc_genitourinary.2002     333.6301               441.6020   481.8944
+## pc_injury.2005            458.9232               987.1820   355.3015
+## pc_injury.2004            471.6012               878.3040   370.0208
+## pc_injury.2003            451.6043               912.8280   371.3842
+## pc_injury.2002            428.9193               924.7140   343.7973
+## pc_TB.2005                 10.7258                14.1540    16.8782
+## pc_TB.2004                 10.7103                14.3500    17.6715
+## pc_TB.2003                 11.0226                16.1980    19.4644
+## pc_TB.2002                 11.3042                21.4620    19.4461
+## pc_hosp.2005              631.3683              1122.1374  1123.0214
+## pc_hosp.2004              651.4183              1108.9645  1134.4087
+## pc_hosp.2003              664.7894              1097.3937  1149.1751
+## pc_hosp.2002              675.7005               793.9509  1095.9648
+## pop.2005                26167.0000              7336.0000 10971.3081
+## pop.2004                25864.4000              7246.4000 10839.0649
+## pop.2003                25567.7000              7144.2000 10709.8108
+## pop.2002                25271.8000              6665.4000 10582.7514
+## 
+## Calculation of weights complete: Total time = 0.02
+## 
+## Calculating basic statistics for end.post = 2018...
+## Completed calculation of basic statistics for end.post = 2018.  Time = 0.01
+## 
+## Calculating survey statistics for end.post = 2018...
+## Completed survey statistics for main weights: Time = 0.6
+## Completed calculation of survey statistics for end.post = 2018.  Time = 0.6
+## 
+## microsynth complete: Overall time = 0.63
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(sea1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Weight Balance Table: 
+## 
+##                              Targets Final.Weighted.Control   All.scaled
+## Intercept                  14.000000                14.0000    14.000000
+## doctors_per_capita.2005    40.200000                44.8000    32.480000
+## doctors_per_capita.2004    41.280000                44.9400    33.384324
+## doctors_per_capita.2003    43.000000                42.5600    33.792973
+## doctors_per_capita.2002    43.600000                41.7200    34.269730
+## IMR_all.2005              208.726687               452.2000   210.199287
+## IMR_all.2004              213.322566               186.2000   226.732863
+## IMR_all.2003              234.904353               194.6000   234.861106
+## IMR_all.2002              232.431843               265.8600   258.747184
+## LOS.2005                  144.100000               119.0000   147.151351
+## LOS.2004                  148.900000               134.4000   151.275676
+## LOS.2003                  156.500000               145.6000   160.394595
+## LOS.2002                  158.100000               149.8000   163.572973
+## pc_beds.2005               76.458045                56.5600    77.211152
+## pc_beds.2004               77.480287                56.0000    77.007676
+## pc_beds.2003               79.836031                56.4200    76.934174
+## pc_beds.2002               80.886864                57.2600    76.790705
+## pc_cancer.2005              9.413134                74.2980    24.309348
+## pc_cancer.2004              9.496097                69.6360    24.764145
+## pc_cancer.2003              9.811661                63.9520    23.049169
+## pc_cancer.2002              9.938734                68.7260    22.380602
+## pc_diabetes.2005            6.031742                16.9540     8.026065
+## pc_diabetes.2004            7.495282                17.1122     8.631712
+## pc_diabetes.2003            5.768624                17.4608     8.493052
+## pc_diabetes.2002            4.708877                17.1318     7.697835
+## pc_digestive.2005         852.817316              1281.8820   781.869849
+## pc_digestive.2004         831.581706              1487.3600   756.422537
+## pc_digestive.2003         788.325575              1267.4620   744.267839
+## pc_digestive.2002         728.460742              1367.1700   791.763470
+## pc_genitourinary.2005     363.251403               790.0900   457.780477
+## pc_genitourinary.2004     368.866315               596.2740   447.157092
+## pc_genitourinary.2003     351.796380               544.3900   459.272414
+## pc_genitourinary.2002     333.630093               441.6020   481.894413
+## pc_injury.2005            458.923157               987.1820   355.301519
+## pc_injury.2004            471.601216               878.3040   370.020838
+## pc_injury.2003            451.604317               912.8280   371.384174
+## pc_injury.2002            428.919265               924.7140   343.797344
+## pc_TB.2005                 10.725760                14.1540    16.878234
+## pc_TB.2004                 10.710343                14.3500    17.671535
+## pc_TB.2003                 11.022615                16.1980    19.464395
+## pc_TB.2002                 11.304169                21.4620    19.446064
+## pc_hosp.2005              631.368314              1122.1374  1123.021355
+## pc_hosp.2004              651.418294              1108.9645  1134.408731
+## pc_hosp.2003              664.789401              1097.3937  1149.175132
+## pc_hosp.2002              675.700510               793.9509  1095.964782
+## pop.2005                26167.000000              7336.0000 10971.308108
+## pop.2004                25864.400000              7246.4000 10839.064865
+## pop.2003                25567.700000              7144.2000 10709.810811
+## pop.2002                25271.800000              6665.4000 10582.751351
+## 
+## Results: 
+## 
+## end.post = 2018
+##                         Trt       Con Pct.Chng Linear.pVal Linear.Lower
+## doctors_per_capita    485.2    791.14   -38.7%      0.0000       -45.7%
+## IMR_all             2082.43   3165.40   -34.2%      0.0001       -43.7%
+## LOS                  1453.4   1548.40    -6.1%      0.0005        -9.0%
+## pc_beds              842.88    522.76    61.2%      1.0000        53.7%
+## pc_cancer            123.36   1229.77   -90.0%      0.0000       -90.7%
+## pc_diabetes          126.51   1341.58   -90.6%      0.0000       -95.6%
+## pc_digestive       11396.67  11541.99    -1.3%      0.4034        -9.3%
+## pc_genitourinary    5332.61   8834.18   -39.6%      0.0000       -43.3%
+## pc_injury            5835.2   7758.41   -24.8%      0.0009       -34.6%
+## pc_TB                101.54    137.97   -26.4%      0.0000       -30.3%
+## pc_hosp             7123.01  10386.57   -31.4%      0.0000       -35.2%
+## pop                385594.9 129953.60   196.7%      1.0000       182.8%
+## Omnibus                  --        --       --      0.0000           --
+##                    Linear.Upper
+## doctors_per_capita       -30.7%
+## IMR_all                  -23.1%
+## LOS                       -3.2%
+## pc_beds                   69.1%
+## pc_cancer                -89.2%
+## pc_diabetes              -80.0%
+## pc_digestive               7.5%
+## pc_genitourinary         -35.7%
+## pc_injury                -13.5%
+## pc_TB                    -22.2%
+## pc_hosp                  -27.4%
+## pop                      211.4%
+## Omnibus                      --
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#plot\_microsynth(sea1)}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
