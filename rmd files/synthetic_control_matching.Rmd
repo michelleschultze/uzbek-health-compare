@@ -64,12 +64,31 @@ comparisons2 <- comparisons %>%
 comparisons2['year'] = comparisons2['year'] - 2001
 
 sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
-             start.pre=1, end.pre=4, end.post=17,
+             start.pre=1, end.pre=5, end.post=17,
              match.out.min = match.out.min,
              match.covar = FALSE,
              result.var=match.out.min, omnibus.var=TRUE,
              test="lower", use.survey = FALSE, 
-             perm=250, jack = TRUE, check.feas=TRUE, use.backup = TRUE,
+             perm=250, jack = 0, check.feas=TRUE, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+plot_microsynth(sea1)
+```
+
+
+Matched just on the var of analysis:
+
+```{r LOS}
+match.out.min <- c("LOS")
+
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=5, end.post=17,
+             match.out.min = match.out.min,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = 0, use.backup = TRUE,
              n.cores = min(parallel::detectCores(), 2))
 summary(sea1)
 
@@ -78,7 +97,90 @@ plot_microsynth(sea1)
 
 
 
+```{r pc_hosp}
+match.out.min <- c("pc_hosp")
+
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=5, end.post=17,
+             match.out.min = match.out.min,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = 0, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+plot_microsynth(sea1)
+```
+
+```{r pc_digestive}
+match.out.min <- c("pc_digestive")
+
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=5, end.post=17,
+             match.out.min = match.out.min,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = 0, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+plot_microsynth(sea1)
+```
+```{r pc_genitourinary}
+match.out.min <- c("pc_genitourinary")
+
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=5, end.post=17,
+             match.out.min = match.out.min,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = 0, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+plot_microsynth(sea1)
+```
+
+```{r pc_TB}
+match.out.min <- c("pc_TB")
+
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=5, end.post=17,
+             match.out.min = match.out.min,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = 0, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+plot_microsynth(sea1)
+```
 
 
+```{r doctors_per_capita}
+match.out.min <- c("doctors_per_capita")
 
+sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+             start.pre=1, end.pre=5, end.post=17,
+             match.out.min = match.out.min,
+             match.covar = FALSE,
+             result.var=match.out.min, omnibus.var=TRUE,
+             test="lower", use.survey = FALSE, 
+             perm=250, jack = 0, use.backup = TRUE,
+             n.cores = min(parallel::detectCores(), 2))
+summary(sea1)
+
+plot_microsynth(sea1)
+```
+
+
+Create the omnibus variable myself:
+
+```{r}
+
+```
 

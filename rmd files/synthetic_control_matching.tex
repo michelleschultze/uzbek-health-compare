@@ -124,7 +124,7 @@
 \begin{verbatim}
 ## 
 ## The downloaded binary packages are in
-##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//Rtmppd4RXV/downloaded_packages
 \end{verbatim}
 
 \begin{Shaded}
@@ -141,7 +141,7 @@
 \begin{verbatim}
 ## 
 ## The downloaded binary packages are in
-##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//Rtmppd4RXV/downloaded_packages
 \end{verbatim}
 
 \begin{Shaded}
@@ -158,7 +158,7 @@
 \begin{verbatim}
 ## 
 ## The downloaded binary packages are in
-##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//Rtmppd4RXV/downloaded_packages
 \end{verbatim}
 
 \begin{Shaded}
@@ -175,7 +175,7 @@
 \begin{verbatim}
 ## 
 ## The downloaded binary packages are in
-##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//RtmpdQFbGQ/downloaded_packages
+##  /var/folders/nx/tm379h5d1qvct10v3987b4sc0000gn/T//Rtmppd4RXV/downloaded_packages
 \end{verbatim}
 
 \begin{Shaded}
@@ -294,40 +294,45 @@
 \CommentTok{\# Outcome vars will be c("doctors\_per\_capita", "IMR\_all", "LOS", "pc\_beds", "pc\_cancer", "pc\_diabetes", "pc\_digestive", "pc\_genitourinary", "pc\_injury", "pc\_TB", "pop", "hosp\_count", "pc\_hosp")}
 \NormalTok{match.out.min }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }\StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }
                    \StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }
-                   \StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pc\_hosp"}\NormalTok{, }\StringTok{"pop"}\NormalTok{)}
+                   \StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pc\_hosp"}\NormalTok{)}
 
 \CommentTok{\# Because we\textquotesingle{}re not matching exactly, we will use match.out.min/match.out.covar rather than match.out/match.covar}
 
-\NormalTok{sea1 }\OtherTok{\textless{}{-}}\NormalTok{ comparisons }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{comparisons2 }\OtherTok{\textless{}{-}}\NormalTok{ comparisons }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{select}\NormalTok{(}\StringTok{"Region"}\NormalTok{, }\StringTok{"year"}\NormalTok{, }\StringTok{"Intervention"}\NormalTok{, }\StringTok{"doctors\_per\_capita"}\NormalTok{, }\StringTok{"IMR\_all"}\NormalTok{, }
          \StringTok{"LOS"}\NormalTok{, }\StringTok{"pc\_beds"}\NormalTok{, }\StringTok{"pc\_cancer"}\NormalTok{, }\StringTok{"pc\_diabetes"}\NormalTok{, }\StringTok{"pc\_digestive"}\NormalTok{, }
          \StringTok{"pc\_genitourinary"}\NormalTok{, }\StringTok{"pc\_injury"}\NormalTok{, }\StringTok{"pc\_TB"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"hosp\_count"}\NormalTok{, }
          \StringTok{"pc\_hosp"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
   \FunctionTok{filter}\NormalTok{(year }\SpecialCharTok{\textgreater{}=} \DecValTok{2002}\NormalTok{, year }\SpecialCharTok{\textless{}=} \DecValTok{2018}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{drop\_na}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
-  \FunctionTok{microsynth}\NormalTok{(}\AttributeTok{idvar=}\StringTok{"Region"}\NormalTok{, }\AttributeTok{timevar=}\StringTok{"year"}\NormalTok{, }\AttributeTok{intvar=}\StringTok{"Intervention"}\NormalTok{,}
-             \AttributeTok{start.pre=}\DecValTok{2002}\NormalTok{, }\AttributeTok{end.pre=}\ConstantTok{NULL}\NormalTok{, }\AttributeTok{end.post=}\DecValTok{2018}\NormalTok{,}
-             \AttributeTok{match.out.min=}\NormalTok{match.out.min,}
-             \AttributeTok{match.out =} \ConstantTok{FALSE}\NormalTok{,}
-             \AttributeTok{match.covar.min =} \ConstantTok{FALSE}\NormalTok{,}
+  \FunctionTok{drop\_na}\NormalTok{()}
+
+\NormalTok{comparisons2[}\StringTok{\textquotesingle{}year\textquotesingle{}}\NormalTok{] }\OtherTok{=}\NormalTok{ comparisons2[}\StringTok{\textquotesingle{}year\textquotesingle{}}\NormalTok{] }\SpecialCharTok{{-}} \DecValTok{2001}
+
+\NormalTok{sea1 }\OtherTok{\textless{}{-}} \FunctionTok{microsynth}\NormalTok{(comparisons2, }\AttributeTok{idvar=}\StringTok{"Region"}\NormalTok{, }\AttributeTok{timevar=}\StringTok{"year"}\NormalTok{, }\AttributeTok{intvar=}\StringTok{"Intervention"}\NormalTok{,}
+             \AttributeTok{start.pre=}\DecValTok{1}\NormalTok{, }\AttributeTok{end.pre=}\DecValTok{4}\NormalTok{, }\AttributeTok{end.post=}\DecValTok{17}\NormalTok{,}
+             \AttributeTok{match.out.min =}\NormalTok{ match.out.min,}
              \AttributeTok{match.covar =} \ConstantTok{FALSE}\NormalTok{,}
-             \AttributeTok{result.var=}\NormalTok{match.out.min, }\AttributeTok{omnibus.var=}\NormalTok{match.out.min,}
-             \AttributeTok{test=}\StringTok{"lower"}\NormalTok{,}
-\CommentTok{\#             perm=250, jack = TRUE, check.feas=TRUE, use.backup = TRUE,}
+             \AttributeTok{result.var=}\NormalTok{match.out.min, }\AttributeTok{omnibus.var=}\ConstantTok{TRUE}\NormalTok{,}
+             \AttributeTok{test=}\StringTok{"lower"}\NormalTok{, }\AttributeTok{use.survey =} \ConstantTok{FALSE}\NormalTok{, }
+             \AttributeTok{perm=}\DecValTok{250}\NormalTok{, }\AttributeTok{jack =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{check.feas=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{use.backup =} \ConstantTok{TRUE}\NormalTok{,}
              \AttributeTok{n.cores =} \FunctionTok{min}\NormalTok{(parallel}\SpecialCharTok{::}\FunctionTok{detectCores}\NormalTok{(), }\DecValTok{2}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 
 \begin{verbatim}
-## WARNING: The following variables will be removed from match.covar.min since they are not in the dataset:
+## match.out = TRUE.  Resetting:
 \end{verbatim}
 
 \begin{verbatim}
-## FALSE
+## match.out = c("doctors_per_capita","IMR_all","LOS","pc_beds","pc_cancer","pc_diabetes","pc_digestive","pc_genitourinary","pc_injury","pc_TB","pc_hosp")
 \end{verbatim}
 
 \begin{verbatim}
-## Setting end.pre = 2005.
+## omnibus.var = TRUE.  Resetting:
+\end{verbatim}
+
+\begin{verbatim}
+## omnibus.var = c("doctors_per_capita","IMR_all","LOS","pc_beds","pc_cancer","pc_diabetes","pc_digestive","pc_genitourinary","pc_injury","pc_TB","pc_hosp")
 \end{verbatim}
 
 \begin{verbatim}
@@ -335,7 +340,7 @@
 \end{verbatim}
 
 \begin{verbatim}
-## Setting use.survey = FALSE.
+## setting jack = 0.
 \end{verbatim}
 
 \begin{verbatim}
@@ -347,7 +352,27 @@
 \end{verbatim}
 
 \begin{verbatim}
-## Created main weights for synthetic control: Time = 0.01
+## Checking feasibility of first model...
+\end{verbatim}
+
+\begin{verbatim}
+## First model is infeasible: Time = 0.04
+\end{verbatim}
+
+\begin{verbatim}
+## Checking feasibility of second model...
+\end{verbatim}
+
+\begin{verbatim}
+## Second model is infeasible: Time = 0.01
+\end{verbatim}
+
+\begin{verbatim}
+## Will use third model.
+\end{verbatim}
+
+\begin{verbatim}
+## Created main weights for synthetic control: Time = 0.02
 \end{verbatim}
 
 \begin{verbatim}
@@ -355,67 +380,69 @@
 \end{verbatim}
 
 \begin{verbatim}
-##                            Targets Final.Weighted.Control All.scaled
-## Intercept                  14.0000                14.0000    14.0000
-## doctors_per_capita.2005    40.2000                44.8000    32.4800
-## doctors_per_capita.2004    41.2800                44.9400    33.3843
-## doctors_per_capita.2003    43.0000                42.5600    33.7930
-## doctors_per_capita.2002    43.6000                41.7200    34.2697
-## IMR_all.2005              208.7267               452.2000   210.1993
-## IMR_all.2004              213.3226               186.2000   226.7329
-## IMR_all.2003              234.9044               194.6000   234.8611
-## IMR_all.2002              232.4318               265.8600   258.7472
-## LOS.2005                  144.1000               119.0000   147.1514
-## LOS.2004                  148.9000               134.4000   151.2757
-## LOS.2003                  156.5000               145.6000   160.3946
-## LOS.2002                  158.1000               149.8000   163.5730
-## pc_beds.2005               76.4580                56.5600    77.2112
-## pc_beds.2004               77.4803                56.0000    77.0077
-## pc_beds.2003               79.8360                56.4200    76.9342
-## pc_beds.2002               80.8869                57.2600    76.7907
-## pc_cancer.2005              9.4131                74.2980    24.3093
-## pc_cancer.2004              9.4961                69.6360    24.7641
-## pc_cancer.2003              9.8117                63.9520    23.0492
-## pc_cancer.2002              9.9387                68.7260    22.3806
-## pc_diabetes.2005            6.0317                16.9540     8.0261
-## pc_diabetes.2004            7.4953                17.1122     8.6317
-## pc_diabetes.2003            5.7686                17.4608     8.4931
-## pc_diabetes.2002            4.7089                17.1318     7.6978
-## pc_digestive.2005         852.8173              1281.8820   781.8698
-## pc_digestive.2004         831.5817              1487.3600   756.4225
-## pc_digestive.2003         788.3256              1267.4620   744.2678
-## pc_digestive.2002         728.4607              1367.1700   791.7635
-## pc_genitourinary.2005     363.2514               790.0900   457.7805
-## pc_genitourinary.2004     368.8663               596.2740   447.1571
-## pc_genitourinary.2003     351.7964               544.3900   459.2724
-## pc_genitourinary.2002     333.6301               441.6020   481.8944
-## pc_injury.2005            458.9232               987.1820   355.3015
-## pc_injury.2004            471.6012               878.3040   370.0208
-## pc_injury.2003            451.6043               912.8280   371.3842
-## pc_injury.2002            428.9193               924.7140   343.7973
-## pc_TB.2005                 10.7258                14.1540    16.8782
-## pc_TB.2004                 10.7103                14.3500    17.6715
-## pc_TB.2003                 11.0226                16.1980    19.4644
-## pc_TB.2002                 11.3042                21.4620    19.4461
-## pc_hosp.2005              631.3683              1122.1374  1123.0214
-## pc_hosp.2004              651.4183              1108.9645  1134.4087
-## pc_hosp.2003              664.7894              1097.3937  1149.1751
-## pc_hosp.2002              675.7005               793.9509  1095.9648
-## pop.2005                26167.0000              7336.0000 10971.3081
-## pop.2004                25864.4000              7246.4000 10839.0649
-## pop.2003                25567.7000              7144.2000 10709.8108
-## pop.2002                25271.8000              6665.4000 10582.7514
+##                       Targets Final.Weighted.Control All.scaled
+## Intercept             14.0000                14.0000    14.0000
+## doctors_per_capita.4  40.2000                31.3538    32.4800
+## doctors_per_capita.3  41.2800                32.1391    33.3843
+## doctors_per_capita.2  43.0000                32.0473    33.7930
+## doctors_per_capita.1  43.6000                31.9881    34.2697
+## IMR_all.4            208.7267               206.6265   210.1993
+## IMR_all.3            213.3226               222.9898   226.7329
+## IMR_all.2            234.9044               203.4518   234.8611
+## IMR_all.1            232.4318               235.5175   258.7472
+## LOS.4                144.1000               133.1384   147.1514
+## LOS.3                148.9000               137.1667   151.2757
+## LOS.2                156.5000               142.8060   160.3946
+## LOS.1                158.1000               149.1673   163.5730
+## pc_beds.4             76.4580                59.5753    77.2112
+## pc_beds.3             77.4803                60.7981    77.0077
+## pc_beds.2             79.8360                60.6751    76.9342
+## pc_beds.1             80.8869                58.7454    76.7907
+## pc_cancer.4            9.4131                34.1767    24.3093
+## pc_cancer.3            9.4961                33.0295    24.7641
+## pc_cancer.2            9.8117                30.2636    23.0492
+## pc_cancer.1            9.9387                32.6512    22.3806
+## pc_diabetes.4          6.0317                12.3179     8.0261
+## pc_diabetes.3          7.4953                12.1904     8.6317
+## pc_diabetes.2          5.7686                11.8625     8.4931
+## pc_diabetes.1          4.7089                11.8009     7.6978
+## pc_digestive.4       852.8173               791.8108   781.8698
+## pc_digestive.3       831.5817               749.6432   756.4225
+## pc_digestive.2       788.3256               666.5575   744.2678
+## pc_digestive.1       728.4607               807.7397   791.7635
+## pc_genitourinary.4   363.2514               499.5129   457.7805
+## pc_genitourinary.3   368.8663               430.7565   447.1571
+## pc_genitourinary.2   351.7964               408.8538   459.2724
+## pc_genitourinary.1   333.6301               418.5810   481.8944
+## pc_injury.4          458.9232               351.7058   355.3015
+## pc_injury.3          471.6012               363.7948   370.0208
+## pc_injury.2          451.6043               455.9668   371.3842
+## pc_injury.1          428.9193               314.8356   343.7973
+## pc_TB.4               10.7258                18.9336    16.8782
+## pc_TB.3               10.7103                19.1726    17.6715
+## pc_TB.2               11.0226                20.1024    19.4644
+## pc_TB.1               11.3042                21.7121    19.4461
+## pc_hosp.4            631.3683               682.0817  1123.0214
+## pc_hosp.3            651.4183               689.7713  1134.4087
+## pc_hosp.2            664.7894               684.2184  1149.1751
+## pc_hosp.1            675.7005               615.8331  1095.9648
 ## 
-## Calculation of weights complete: Total time = 0.02
+## Calculating weights for permutation groups...
+## Parallelizing with n.cores = 2...
+## Completed calculation of all replication weights: Time = 3.13
 ## 
-## Calculating basic statistics for end.post = 2018...
-## Completed calculation of basic statistics for end.post = 2018.  Time = 0.01
+## Removing 0 permutation groups with pre-intervention MSE > cut.mse.
 ## 
-## Calculating survey statistics for end.post = 2018...
-## Completed survey statistics for main weights: Time = 0.6
-## Completed calculation of survey statistics for end.post = 2018.  Time = 0.6
+## Calculation of weights complete: Total time = 3.21
 ## 
-## microsynth complete: Overall time = 0.63
+## Calculating basic statistics for end.post = 17...
+## Completed calculation of basic statistics for end.post = 17.  Time = 0.19
+## 
+## Calculating survey statistics for end.post = 17...
+## Completed survey statistics for main weights: Time = 0.85
+## Completed calculation of survey statistics for end.post = 17.  Time = 0.85
+## 
+## microsynth complete: Overall time = 4.27
 \end{verbatim}
 
 \begin{Shaded}
@@ -427,95 +454,100 @@
 \begin{verbatim}
 ## Weight Balance Table: 
 ## 
-##                              Targets Final.Weighted.Control   All.scaled
-## Intercept                  14.000000                14.0000    14.000000
-## doctors_per_capita.2005    40.200000                44.8000    32.480000
-## doctors_per_capita.2004    41.280000                44.9400    33.384324
-## doctors_per_capita.2003    43.000000                42.5600    33.792973
-## doctors_per_capita.2002    43.600000                41.7200    34.269730
-## IMR_all.2005              208.726687               452.2000   210.199287
-## IMR_all.2004              213.322566               186.2000   226.732863
-## IMR_all.2003              234.904353               194.6000   234.861106
-## IMR_all.2002              232.431843               265.8600   258.747184
-## LOS.2005                  144.100000               119.0000   147.151351
-## LOS.2004                  148.900000               134.4000   151.275676
-## LOS.2003                  156.500000               145.6000   160.394595
-## LOS.2002                  158.100000               149.8000   163.572973
-## pc_beds.2005               76.458045                56.5600    77.211152
-## pc_beds.2004               77.480287                56.0000    77.007676
-## pc_beds.2003               79.836031                56.4200    76.934174
-## pc_beds.2002               80.886864                57.2600    76.790705
-## pc_cancer.2005              9.413134                74.2980    24.309348
-## pc_cancer.2004              9.496097                69.6360    24.764145
-## pc_cancer.2003              9.811661                63.9520    23.049169
-## pc_cancer.2002              9.938734                68.7260    22.380602
-## pc_diabetes.2005            6.031742                16.9540     8.026065
-## pc_diabetes.2004            7.495282                17.1122     8.631712
-## pc_diabetes.2003            5.768624                17.4608     8.493052
-## pc_diabetes.2002            4.708877                17.1318     7.697835
-## pc_digestive.2005         852.817316              1281.8820   781.869849
-## pc_digestive.2004         831.581706              1487.3600   756.422537
-## pc_digestive.2003         788.325575              1267.4620   744.267839
-## pc_digestive.2002         728.460742              1367.1700   791.763470
-## pc_genitourinary.2005     363.251403               790.0900   457.780477
-## pc_genitourinary.2004     368.866315               596.2740   447.157092
-## pc_genitourinary.2003     351.796380               544.3900   459.272414
-## pc_genitourinary.2002     333.630093               441.6020   481.894413
-## pc_injury.2005            458.923157               987.1820   355.301519
-## pc_injury.2004            471.601216               878.3040   370.020838
-## pc_injury.2003            451.604317               912.8280   371.384174
-## pc_injury.2002            428.919265               924.7140   343.797344
-## pc_TB.2005                 10.725760                14.1540    16.878234
-## pc_TB.2004                 10.710343                14.3500    17.671535
-## pc_TB.2003                 11.022615                16.1980    19.464395
-## pc_TB.2002                 11.304169                21.4620    19.446064
-## pc_hosp.2005              631.368314              1122.1374  1123.021355
-## pc_hosp.2004              651.418294              1108.9645  1134.408731
-## pc_hosp.2003              664.789401              1097.3937  1149.175132
-## pc_hosp.2002              675.700510               793.9509  1095.964782
-## pop.2005                26167.000000              7336.0000 10971.308108
-## pop.2004                25864.400000              7246.4000 10839.064865
-## pop.2003                25567.700000              7144.2000 10709.810811
-## pop.2002                25271.800000              6665.4000 10582.751351
+##                         Targets Final.Weighted.Control  All.scaled
+## Intercept             14.000000               14.00000   14.000000
+## doctors_per_capita.4  40.200000               31.35377   32.480000
+## doctors_per_capita.3  41.280000               32.13908   33.384324
+## doctors_per_capita.2  43.000000               32.04732   33.792973
+## doctors_per_capita.1  43.600000               31.98807   34.269730
+## IMR_all.4            208.726687              206.62647  210.199287
+## IMR_all.3            213.322566              222.98982  226.732863
+## IMR_all.2            234.904353              203.45185  234.861106
+## IMR_all.1            232.431843              235.51749  258.747184
+## LOS.4                144.100000              133.13842  147.151351
+## LOS.3                148.900000              137.16672  151.275676
+## LOS.2                156.500000              142.80601  160.394595
+## LOS.1                158.100000              149.16734  163.572973
+## pc_beds.4             76.458045               59.57532   77.211152
+## pc_beds.3             77.480287               60.79810   77.007676
+## pc_beds.2             79.836031               60.67512   76.934174
+## pc_beds.1             80.886864               58.74540   76.790705
+## pc_cancer.4            9.413134               34.17669   24.309348
+## pc_cancer.3            9.496097               33.02945   24.764145
+## pc_cancer.2            9.811661               30.26355   23.049169
+## pc_cancer.1            9.938734               32.65118   22.380602
+## pc_diabetes.4          6.031742               12.31789    8.026065
+## pc_diabetes.3          7.495282               12.19044    8.631712
+## pc_diabetes.2          5.768624               11.86246    8.493052
+## pc_diabetes.1          4.708877               11.80086    7.697835
+## pc_digestive.4       852.817316              791.81077  781.869849
+## pc_digestive.3       831.581706              749.64325  756.422537
+## pc_digestive.2       788.325575              666.55754  744.267839
+## pc_digestive.1       728.460742              807.73968  791.763470
+## pc_genitourinary.4   363.251403              499.51285  457.780477
+## pc_genitourinary.3   368.866315              430.75655  447.157092
+## pc_genitourinary.2   351.796380              408.85376  459.272414
+## pc_genitourinary.1   333.630093              418.58095  481.894413
+## pc_injury.4          458.923157              351.70580  355.301519
+## pc_injury.3          471.601216              363.79478  370.020838
+## pc_injury.2          451.604317              455.96683  371.384174
+## pc_injury.1          428.919265              314.83560  343.797344
+## pc_TB.4               10.725760               18.93359   16.878234
+## pc_TB.3               10.710343               19.17259   17.671535
+## pc_TB.2               11.022615               20.10238   19.464395
+## pc_TB.1               11.304169               21.71208   19.446064
+## pc_hosp.4            631.368314              682.08168 1123.021355
+## pc_hosp.3            651.418294              689.77134 1134.408731
+## pc_hosp.2            664.789401              684.21844 1149.175132
+## pc_hosp.1            675.700510              615.83312 1095.964782
 ## 
 ## Results: 
 ## 
-## end.post = 2018
-##                         Trt       Con Pct.Chng Linear.pVal Linear.Lower
-## doctors_per_capita    485.2    791.14   -38.7%      0.0000       -45.7%
-## IMR_all             2082.43   3165.40   -34.2%      0.0001       -43.7%
-## LOS                  1453.4   1548.40    -6.1%      0.0005        -9.0%
-## pc_beds              842.88    522.76    61.2%      1.0000        53.7%
-## pc_cancer            123.36   1229.77   -90.0%      0.0000       -90.7%
-## pc_diabetes          126.51   1341.58   -90.6%      0.0000       -95.6%
-## pc_digestive       11396.67  11541.99    -1.3%      0.4034        -9.3%
-## pc_genitourinary    5332.61   8834.18   -39.6%      0.0000       -43.3%
-## pc_injury            5835.2   7758.41   -24.8%      0.0009       -34.6%
-## pc_TB                101.54    137.97   -26.4%      0.0000       -30.3%
-## pc_hosp             7123.01  10386.57   -31.4%      0.0000       -35.2%
-## pop                385594.9 129953.60   196.7%      1.0000       182.8%
-## Omnibus                  --        --       --      0.0000           --
-##                    Linear.Upper
-## doctors_per_capita       -30.7%
-## IMR_all                  -23.1%
-## LOS                       -3.2%
-## pc_beds                   69.1%
-## pc_cancer                -89.2%
-## pc_diabetes              -80.0%
-## pc_digestive               7.5%
-## pc_genitourinary         -35.7%
-## pc_injury                -13.5%
-## pc_TB                    -22.2%
-## pc_hosp                  -27.4%
-## pop                      211.4%
-## Omnibus                      --
+## end.post = 17
+##                         Trt     Con Pct.Chng Linear.pVal Linear.Lower
+## doctors_per_capita    485.2  404.53    19.9%      0.9924         5.6%
+## IMR_all             2082.43 2616.44   -20.4%      0.0000       -25.6%
+## LOS                  1453.4 1552.49    -6.4%      0.0324       -11.6%
+## pc_beds              842.88  652.81    29.1%      0.9998        12.9%
+## pc_cancer            123.36  587.23   -79.0%      0.0000       -80.8%
+## pc_diabetes          126.51  901.55   -86.0%      0.0000       -91.2%
+## pc_digestive       11396.67 9536.06    19.5%      0.9969         7.3%
+## pc_genitourinary    5332.61 5719.96    -6.8%      0.1028       -14.7%
+## pc_injury            5835.2 4024.74    45.0%      1.0000        28.1%
+## pc_TB                101.54  137.41   -26.1%      0.0000       -31.3%
+## pc_hosp             7123.01 6446.93    10.5%      0.8540        -6.1%
+## Omnibus                  --      --       --      0.0003           --
+##                    Linear.Upper Perm.pVal
+## doctors_per_capita        36.2%    0.9160
+## IMR_all                  -14.8%    0.0000
+## LOS                       -0.9%    0.0120
+## pc_beds                   47.7%    1.0000
+## pc_cancer                -77.0%    0.0000
+## pc_diabetes              -77.6%    0.0000
+## pc_digestive              33.1%    0.9600
+## pc_genitourinary           1.9%    0.3080
+## pc_injury                 64.1%    1.0000
+## pc_TB                    -20.6%    0.0000
+## pc_hosp                   30.0%    0.7480
+## Omnibus                      --    0.8600
 \end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\#plot\_microsynth(sea1)}
+\FunctionTok{plot\_microsynth}\NormalTok{(sea1)}
 \end{Highlighting}
 \end{Shaded}
 
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-1.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-2.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-3.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-4.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-5.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-6.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-7.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-8.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-9.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-10.pdf}
+\includegraphics{synthetic_control_matching_files/figure-latex/synthetic-control-11.pdf}
 
 \end{document}
