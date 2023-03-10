@@ -232,6 +232,8 @@ plot_microsynth(sea1)
 KARAKALPAKSTAN ONLY
 
 ```{r}
+set.seed(1)
+
 # Outcome vars 
 match.out.min <- c("doctors_per_capita", "IMR_all", "LOS", "pc_beds", 
                    "pc_cancer", "pc_diabetes", "pc_digestive", 
@@ -239,17 +241,16 @@ match.out.min <- c("doctors_per_capita", "IMR_all", "LOS", "pc_beds",
 
 #Make Karakalpakstan the only region of interest
 comparisons3 <- comparisons2 %>%
-  filter(Country != "UZ" | Region == "Karakalpakstan") %>%
   mutate(Intervention = case_when(Region == "Karakalpakstan" & year > 4 ~ 1,
                                   Region != "Karakalpakstan" | year <= 4 ~ 0))
 
-sea1 <- microsynth(comparisons2, idvar="Region", timevar="year", intvar="Intervention",
+sea1 <- microsynth(comparisons3, idvar="Region", timevar="year", intvar="Intervention",
              start.pre=1, end.pre=4, end.post=17,
              match.out.min = match.out.min,
              match.covar = FALSE,
              result.var=match.out.min, omnibus.var=TRUE,
              test="lower", use.survey = FALSE, 
-             perm=250, jack = 0, check.feas=TRUE, use.backup = TRUE,
+             perm=500, jack = 0, check.feas=TRUE, use.backup = TRUE,
              n.cores = min(parallel::detectCores(), 2))
 summary(sea1)
 
